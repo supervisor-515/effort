@@ -1,26 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { f1, fmtHM } from '../lib/format';
-import { categoryStats, density } from '../lib/stats';
+import { categoryStats } from '../lib/stats';
+import { categoryInsight } from '../lib/insights';
 import { BackHeader, Card, EmptyState, SectionLabel } from '../components/ui';
-
-const INSIGHTS: Record<string, string> = {
-  study: '공부는 이번 흐름의 성장 영역이에요. 힘들었지만 가장 많이 쌓였습니다.',
-  exercise: '운동은 저항은 높지만 시간이 적게 쌓였어요. 진입장벽을 낮추면 좋아요.',
-  work: '일은 꾸준히 쌓인 루틴이에요. 시간도 저항도 안정적입니다.',
-  house: '집안일은 짧지만 자주 미루게 되는 일이에요.',
-  relation: '관계는 편안하게 이어간 시간이었어요.',
-  hobby: '취미는 가장 편하게 흘러간 영역이에요. 회복에 도움이 됩니다.',
-  recover: '회복은 의식적으로 챙긴 쉼이에요. 잘 하고 있어요.',
-};
-
-function insightFor(c: { id: string; name: string; avgRes: number; hours: number; effort: number }): string {
-  if (INSIGHTS[c.id]) return INSIGHTS[c.id];
-  const dens = density(c.effort, c.hours);
-  if (c.avgRes >= 3.5) return `${c.name}은(는) 저항이 높은 영역이에요. 작게 쪼개서 버텨낸 시간입니다.`;
-  if (dens >= 1.6) return `${c.name}은(는) 짧고 강하게 집중한 영역이에요.`;
-  return `${c.name}은(는) 비교적 편안하게 이어간 영역이에요.`;
-}
 
 export function CategoryScreen() {
   const { entries, categories, settings } = useStore();
@@ -48,7 +31,9 @@ export function CategoryScreen() {
   const cMax = Math.max(...cats.map((c) => c.effort), 0.1);
   const maxH = Math.max(...cats.map((c) => c.hours), 0.1);
   const maxEff = Math.max(...cats.map((c) => c.effort), 0.1);
+  const topId = byEffort[0]?.id;
   const sel = cats.find((c) => c.id === selId) ?? cats[0];
+  const selInsight = categoryInsight(sel, { maxHours: maxH, isTop: sel.id === topId });
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -88,7 +73,7 @@ export function CategoryScreen() {
               <div style={{ font: '500 13px var(--font-sans)', color: 'var(--ink)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 3, background: sel.color }} />{sel.name}
               </div>
-              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{insightFor(sel)}</div>
+              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{selInsight}</div>
             </div>
           )}
         </Card>
@@ -141,7 +126,7 @@ export function CategoryScreen() {
             <div style={{ font: '500 13px var(--font-sans)', color: 'var(--ink)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 9, height: 9, borderRadius: 3, background: sel.color }} />{sel.name}
             </div>
-            <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{insightFor(sel)}</div>
+            <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{selInsight}</div>
           </div>
         </Card>
       </div>

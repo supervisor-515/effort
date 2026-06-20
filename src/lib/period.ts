@@ -33,23 +33,55 @@ export const RANGE_TITLE: Record<RangeKey, (today: Date) => string> = {
 
 export const RANGE_LABEL: Record<RangeKey, string> = { day: '오늘', week: '이번 주', month: '이번 달', year: '올해' };
 
-export function recapLine(range: RangeKey, clayPct: number, hasData: boolean): string {
-  if (!hasData) return '아직 기록이 쌓이는 중이에요. 한 줄씩 적어가다 보면 흐름이 보여요.';
-  const heavy = clayPct >= 42;
-  if (range === 'day') {
-    return heavy
-      ? '오늘은 버텨낸 노력이 많았던 하루였어요. 잘 넘겼습니다.'
-      : '오늘은 비교적 편하게 흘러간 하루였어요.';
+/** 마지막 글자 받침 유무로 은/는 선택 */
+function topic(word: string): string {
+  const last = word.charCodeAt(word.length - 1);
+  if (last < 0xac00 || last > 0xd7a3) return '는';
+  return (last - 0xac00) % 28 !== 0 ? '은' : '는';
+}
+
+export function recapLine(p: {
+  range: RangeKey;
+  clayPct: number;
+  deltaPct: number | null;
+  hasData: boolean;
+}): string {
+  if (!p.hasData) return '아직 기록이 쌓이는 중이에요. 한 줄씩 적어가다 보면 흐름이 보여요.';
+  const rw = RANGE_LABEL[p.range];
+  const t = `${rw}${topic(rw)}`;
+  const c = p.clayPct;
+
+  let body: string;
+  if (p.range === 'year') {
+    body = c <= 45
+      ? '올해는 천천히, 그러나 분명히 쌓였어요.'
+      : '올해는 버텨낸 시간이 많았던 한 해였어요. 그만큼 단단해졌어요.';
+  } else if (c <= 30) {
+    body = `${t} 즐겁게 한 노력이 중심이었어요. 무리 없이 가볍게 흘러갔어요.`;
+  } else if (c <= 45) {
+    body = `${t} 즐겁게 한 노력과 버텨낸 노력이 고르게 섞였어요.`;
+  } else if (c <= 65) {
+    body = `${t} 빠르게 달렸다기보다, 하기 싫은 순간을 여러 번 넘긴 시간이었어요.`;
+  } else {
+    body = `${t} 버텨낸 노력이 대부분이었어요. 힘든 걸 정말 많이 넘겼어요.`;
   }
-  if (range === 'week') {
-    return heavy
-      ? '이번 주는 하기 싫은 순간을 여러 번 넘긴 한 주였어요.'
-      : '최근 7일은 큰 폭발보다 일정하게 쌓은 흐름이에요.';
+
+  // 변화가 뚜렷하면 한 마디 덧붙임 (연 단위 제외)
+  let tail = '';
+  if (p.deltaPct != null && Math.abs(p.deltaPct) >= 15 && p.range !== 'year') {
+    const prev = { day: '어제', week: '지난주', month: '지난달', year: '작년' }[p.range];
+    tail = p.deltaPct > 0
+      ? ` ${prev}보다 노력량이 ${p.deltaPct}% 늘었어요.`
+      : ` ${prev}보다 ${Math.abs(p.deltaPct)}% 줄었지만, 이어간 것만으로 충분해요.`;
   }
-  if (range === 'year') {
-    return '1년 동안 천천히, 그러나 분명히 쌓였어요.';
-  }
-  return heavy
-    ? '이번 달은 빠르게 달린 달이라기보다, 하기 싫은 순간을 여러 번 넘긴 달이에요.'
-    : '이번 달은 즐겁게 한 노력이 흐름을 이끈 달이에요.';
+  return body + tail;
+}
+
+/** 즐겁게 vs 버텨냄 비율 코멘트 — 5단계 */
+export function ratioNote(clayPct: number): string {
+  if (clayPct <= 20) return '거의 다 즐겁게 한 노력이었어요. 가볍게 흘러간 시기예요.';
+  if (clayPct <= 40) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
+  if (clayPct <= 55) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
+  if (clayPct <= 70) return '버텨낸 노력의 비중이 컸어요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.';
+  return '대부분이 버텨낸 노력이었어요. 무리하지 않았는지 살펴봐도 좋아요.';
 }

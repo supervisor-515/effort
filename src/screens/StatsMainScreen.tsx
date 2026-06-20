@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { navigate } from '../router';
 import { f1, fmtHM } from '../lib/format';
 import { buildFlow, categoryStats, periodStats } from '../lib/stats';
-import { periodFilter, RANGE_LABEL, RANGE_TITLE, recapLine } from '../lib/period';
+import { periodFilter, ratioNote, RANGE_LABEL, RANGE_TITLE, recapLine } from '../lib/period';
 import { Card, EmptyState, ScreenHeader, SectionLabel } from '../components/ui';
 import type { RangeKey } from '../types';
 
@@ -45,10 +45,6 @@ export function StatsMainScreen() {
   const circ = 2 * Math.PI * 46;
   const joyLen = (circ * stats.joyPct) / 100;
   const clayLen = (circ * stats.clayPct) / 100;
-
-  const ratioNote = stats.clayPct >= 42
-    ? '버텨낸 노력의 비중이 컸네요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.'
-    : '즐겁게 한 노력이 흐름을 이끈 시기였어요.';
 
   const flowSub = { day: '최근 14일 · 일별', week: '최근 12주 · 주별', month: '최근 12개월 · 월별', year: '연도별 누적' }[range];
   const maLabel = range === 'day' ? (maWin === 7 ? '7일 평균' : '30일 평균') : '추세선';
@@ -113,7 +109,7 @@ export function StatsMainScreen() {
             {/* 한 줄 회고 */}
             <div style={{ background: 'var(--olive)', borderRadius: 18, padding: '18px 20px', marginTop: 12 }}>
               <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.1em', color: '#C7CCB2', textTransform: 'uppercase', marginBottom: 8 }}>{RANGE_LABEL[range]}의 회고</div>
-              <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine(range, stats.clayPct, stats.hasData)}</div>
+              <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine({ range, clayPct: stats.clayPct, deltaPct: stats.deltaPct, hasData: stats.hasData })}</div>
             </div>
 
             {/* 노력 흐름 */}
@@ -188,7 +184,7 @@ export function StatsMainScreen() {
                 <div style={{ flex: 1 }}>
                   <RatioRow color="var(--olive)" label="즐겁게 한 노력" pct={stats.joyPct} />
                   <RatioRow color="var(--clay)" label="버텨낸 노력" pct={stats.clayPct} />
-                  <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '9px 11px', marginTop: 4 }}>{ratioNote}</div>
+                  <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '9px 11px', marginTop: 4 }}>{ratioNote(stats.clayPct)}</div>
                 </div>
               </div>
               <button onClick={() => navigate('#/stats/resistance')} style={linkBtn}>저항 분석 자세히 보기 ›</button>

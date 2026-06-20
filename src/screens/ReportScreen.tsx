@@ -9,10 +9,10 @@ import { BackHeader, EmptyState } from '../components/ui';
 const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
 function classifyStyle(clayPct: number, dens: number, stability: number): { style: string; note: string } {
-  if (clayPct >= 45) return { style: '고저항 돌파형', note: '쉽게 흘러간 달은 아니었지만, 저항도가 높은 항목을 여러 번 넘겼습니다.' };
-  if (stability >= 70) return { style: '꾸준한 축적형', note: '큰 기복 없이 매일 비슷한 양을 쌓은 달이에요. 흐름이 단단합니다.' };
-  if (dens >= 1.6) return { style: '짧고 굵은 집중형', note: '투입한 시간 대비 노력 밀도가 높았어요. 짧아도 깊게 몰입한 달입니다.' };
-  return { style: '편안한 흐름형', note: '즐겁게 한 노력이 중심이 된 달이에요. 무리 없이 이어갔습니다.' };
+  if (clayPct >= 45) return { style: '고저항 돌파형', note: `버텨낸 비율이 ${clayPct}%로 높았어요. 저항이 큰 일을 여러 번 정면으로 넘긴 달이에요.` };
+  if (stability >= 70) return { style: '꾸준한 축적형', note: `안정감 지수 ${stability}로, 큰 기복 없이 매일 비슷하게 쌓은 단단한 달이에요.` };
+  if (dens >= 1.6) return { style: '짧고 굵은 집중형', note: `투입 시간당 ${f1(dens)}점으로 밀도가 높았어요. 짧아도 깊게 몰입한 달입니다.` };
+  return { style: '편안한 흐름형', note: `버텨낸 비율 ${clayPct}%로, 즐겁게 한 노력이 중심이 된 무리 없는 달이에요.` };
 }
 
 export function ReportScreen() {

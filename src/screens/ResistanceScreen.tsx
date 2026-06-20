@@ -3,6 +3,7 @@ import { useStore } from '../store';
 import { f1, mix } from '../lib/format';
 import { aggregateByDay } from '../lib/score';
 import { daySeries, dowResistance, heatmap } from '../lib/stats';
+import { dowNote, heatNote, recoveryHeading, recoveryNote, resistanceTrendNote, sixMonthNote } from '../lib/insights';
 import { BackHeader, Card, EmptyState } from '../components/ui';
 
 const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
@@ -37,16 +38,16 @@ export function ResistanceScreen() {
     const recClay = l7t ? Math.round((l7clay / l7t) * 100) : 0;
 
     // 6개월 즐겁게/버텨냄
-    const ratioMonths: { label: string; joyH: number; clayH: number }[] = [];
+    const ratioMonths: { label: string; joyH: number; clayH: number; clayPct: number; has: boolean }[] = [];
     for (let mo = 5; mo >= 0; mo--) {
       const dt = new Date(today.getFullYear(), today.getMonth() - mo, 1);
       const grp = [...map.values()].filter((d) => {
         const x = new Date(d.date);
         return x.getFullYear() === dt.getFullYear() && x.getMonth() === dt.getMonth();
       });
-      const t = grp.reduce((a, d) => a + d.total, 0) || 1;
-      const cl = grp.reduce((a, d) => a + d.clay, 0) / t;
-      ratioMonths.push({ label: `${dt.getMonth() + 1}월`, joyH: (1 - cl) * 100, clayH: cl * 100 });
+      const tot = grp.reduce((a, d) => a + d.total, 0);
+      const cl = grp.reduce((a, d) => a + d.clay, 0) / (tot || 1);
+      ratioMonths.push({ label: `${dt.getMonth() + 1}월`, joyH: (1 - cl) * 100, clayH: cl * 100, clayPct: Math.round(cl * 100), has: tot > 0 });
     }
 
     const dow = dowResistance(entries);
@@ -68,10 +69,6 @@ export function ResistanceScreen() {
   }
 
   const wrMax = Math.max(...data.weekRes, 0.1);
-  const resUp = data.recRes > data.recPrevRes;
-  const recoveryNote = resUp
-    ? '최근 7일은 노력량은 유지됐지만 평균 저항도가 높아졌어요. 이번 주는 작은 일부터 가볍게 쌓아도 충분해요.'
-    : '최근 7일은 저항이 한결 가벼워졌어요. 지금 리듬을 부드럽게 이어가 보세요.';
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -90,16 +87,16 @@ export function ResistanceScreen() {
               </div>
             ))}
           </div>
-          <Note>{resUp ? '최근으로 올수록 평균 저항이 조금씩 높아졌어요. 해내고는 있지만, 더 힘겹게 버티는 흐름입니다.' : '최근 들어 평균 저항이 완만해졌어요. 한결 수월하게 쌓고 있어요.'}</Note>
+          <Note>{resistanceTrendNote(data.recRes, data.recPrevRes)}</Note>
         </Card>
 
         {/* 회복 신호 */}
         <div style={{ background: '#EFE3D6', border: '1px solid #E3D2BF', borderRadius: 20, padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--clay)' }} />
-            <span style={{ font: '600 13px var(--font-sans)', color: 'var(--clay-accent)' }}>회복이 필요한 신호</span>
+            <span style={{ font: '600 13px var(--font-sans)', color: 'var(--clay-accent)' }}>{recoveryHeading(data.recRes, data.recPrevRes)}</span>
           </div>
-          <div style={{ font: '400 14px/1.6 var(--font-sans)', color: '#6B5A48' }}>{recoveryNote}</div>
+          <div style={{ font: '400 14px/1.6 var(--font-sans)', color: '#6B5A48' }}>{recoveryNote(data.recRes, data.recPrevRes)}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             <RecCell value={f1(data.recRes)} label="최근7일 평균저항" color="var(--clay)" />
             <RecCell value={f1(data.recPrevRes)} label="직전7일 평균저항" color="var(--olive)" />
@@ -121,7 +118,7 @@ export function ResistanceScreen() {
               </div>
             ))}
           </div>
-          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 12 }}>달마다 버텨낸 노력의 비중이 어떻게 움직였는지 보여줘요. 막대 위쪽(클레이)이 두꺼울수록 더 많이 버틴 달이에요.</div>
+          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 12 }}>{sixMonthNote(data.ratioMonths)}</div>
         </Card>
 
         {/* 요일별 저항도 */}
@@ -139,7 +136,7 @@ export function ResistanceScreen() {
               );
             })}
           </div>
-          <Note>{DOW[data.dwMaxI]}요일의 시작 저항이 가장 높아요. 가장 가벼웠던 요일과 견주어 리듬을 살펴보세요.</Note>
+          <Note>{dowNote(data.dow)}</Note>
         </Card>
 
         {/* 시간대 히트맵 */}
@@ -167,7 +164,7 @@ export function ResistanceScreen() {
                   </div>
                 </div>
               </div>
-              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 14 }}>색이 진한 칸일수록 그 시간대에 더 버텼다는 뜻이에요. 옅은 칸은 편안하게 흘러간 시간대예요.</div>
+              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 14 }}>{heatNote(data.heat)}</div>
             </>
           ) : (
             <div style={{ font: '400 12px/1.6 var(--font-sans)', color: 'var(--ink-mute)', marginTop: 14 }}>시간대 정보가 있는 기록이 아직 적어요. 항목을 추가하면 칸이 채워져요.</div>
