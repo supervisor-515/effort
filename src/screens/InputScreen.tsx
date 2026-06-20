@@ -26,6 +26,43 @@ export function InputScreen() {
   const [popKey, setPopKey] = useState(0);
   const scrRef = useRef<HTMLDivElement>(null);
 
+  // 컴포저 핸들 드래그(잡고 내리기/올리기) + 탭 토글
+  const [dragDy, setDragDy] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{ startY: number; moved: boolean } | null>(null);
+  const draggedRef = useRef(false);
+
+  const onHandleDown = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startY: e.clientY, moved: false };
+    setDragging(true);
+  };
+  const onHandleMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dy = e.clientY - d.startY;
+    if (Math.abs(dy) > 6) d.moved = true;
+    // 열려 있으면 아래로, 접혀 있으면 위로 끌리는 만큼만 따라오게(살짝의 저항감)
+    setDragDy(composerOpen ? Math.max(0, Math.min(dy, 240)) : Math.min(0, Math.max(dy, -90)));
+  };
+  const onHandleUp = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dy = e.clientY - d.startY;
+    dragRef.current = null;
+    setDragging(false);
+    setDragDy(0);
+    if (d.moved) {
+      draggedRef.current = true; // 뒤따라오는 click 억제
+      if (composerOpen && dy > 56) setComposerOpen(false);
+      else if (!composerOpen && dy < -32) setComposerOpen(true);
+    }
+  };
+  const onHandleClick = () => {
+    if (draggedRef.current) { draggedRef.current = false; return; }
+    setComposerOpen((o) => !o);
+  };
+
   const today = startOfToday();
   const selDate = addDays(today, -offset);
   const iso = toISODate(selDate);
@@ -166,9 +203,17 @@ export function InputScreen() {
       {/* 컴포저 시트 */}
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 64, zIndex: 5, background: 'var(--card)', borderTop: '1px solid #E8E0D0', borderRadius: '24px 24px 0 0', padding: '10px 18px 16px', boxShadow: '0 -8px 28px rgba(80,60,30,.1)' }}
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 64, zIndex: 5, background: 'var(--card)', borderTop: '1px solid #E8E0D0', borderRadius: '24px 24px 0 0', padding: '10px 18px 16px', boxShadow: '0 -8px 28px rgba(80,60,30,.1)', transform: dragDy ? `translateY(${dragDy}px)` : undefined, transition: dragging ? 'none' : 'transform .25s cubic-bezier(.2,.8,.3,1)' }}
       >
-        <button onClick={() => setComposerOpen((o) => !o)} aria-label="입력창 펼치기/접기" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 0 12px' }}>
+        <button
+          onClick={onHandleClick}
+          onPointerDown={onHandleDown}
+          onPointerMove={onHandleMove}
+          onPointerUp={onHandleUp}
+          onPointerCancel={onHandleUp}
+          aria-label="입력창 펼치기/접기 (탭 또는 드래그)"
+          style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0 14px', touchAction: 'none' }}
+        >
           <div style={{ width: 38, height: 4, borderRadius: 99, background: '#E0D8C8' }} />
         </button>
 
