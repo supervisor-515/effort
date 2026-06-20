@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+
+# 빌드 시 생성되는 아이콘 (npm run build 가 재생성)
+public/icons/
+public/apple-touch-icon.png
+
+*.tsbuildinfo

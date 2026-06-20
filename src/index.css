@@ -1,0 +1,166 @@
+:root {
+  --bg: #e9e2d4;
+  --surface: #f3eee3;
+  --card: #fbf8f1;
+  --card-2: #f4ede0;
+  --line: #eae2d2;
+  --line-2: #ece5d6;
+  --ink: #3a352c;
+  --ink-soft: #6b6358;
+  --ink-mute: #a39a86;
+  --olive: #6f7252;
+  --olive-2: #8a9b6b;
+  --clay: #c07b53;
+  --clay-accent: #a9743e;
+
+  --font-serif: 'Fraunces', 'Noto Serif KR', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Malgun Gothic', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  /* 데스크톱에서 보면 가운데 정렬, 모바일에서는 꽉 채움 */
+  display: flex;
+  justify-content: center;
+}
+
+#root {
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 큰 화면에서는 카드처럼 살짝 띄움 */
+@media (min-width: 520px) {
+  body {
+    align-items: center;
+    background: var(--bg);
+  }
+  #root {
+    height: min(880px, 96dvh);
+    border-radius: 28px;
+    box-shadow: 0 24px 60px rgba(70, 50, 25, 0.18);
+  }
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+/* 저항도/계수 슬라이더 */
+.res {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: transparent;
+}
+.res::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7e8b57, #c49b6a, #c07b53);
+}
+.res::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fbf8f1;
+  border: 2.5px solid #be7b5a;
+  box-shadow: 0 2px 6px rgba(80, 50, 25, 0.28);
+  cursor: pointer;
+  margin-top: -8px;
+}
+.res::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7e8b57, #c49b6a, #c07b53);
+}
+.res::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fbf8f1;
+  border: 2.5px solid #be7b5a;
+  cursor: pointer;
+}
+
+/* 스크롤 영역 (스크롤바 숨김) */
+.scr {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scr::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.2;
+  }
+  55% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
