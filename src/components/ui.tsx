@@ -36,7 +36,7 @@ export function SectionLabel({ children, style }: { children: ReactNode; style?:
 
 export function ScreenHeader({ title, sub }: { title: string; sub?: string }) {
   return (
-    <div style={{ padding: '2px 22px 12px', flex: 'none' }}>
+    <div style={{ padding: '18px 22px 12px', flex: 'none' }}>
       <div style={{ font: '600 24px var(--font-serif)', color: 'var(--ink)' }}>{title}</div>
       {sub && <div style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 1 }}>{sub}</div>}
     </div>
@@ -45,7 +45,7 @@ export function ScreenHeader({ title, sub }: { title: string; sub?: string }) {
 
 export function BackHeader({ title, sub, to = '#/stats' }: { title: string; sub?: string; to?: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '2px 18px 12px', flex: 'none' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px 12px', flex: 'none' }}>
       <button
         onClick={() => navigate(to)}
         aria-label="뒤로"

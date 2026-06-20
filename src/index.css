@@ -47,6 +47,9 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  /* 노치/상태바 안전영역 + 기본 상단 숨통, 하단 홈 인디케이터 여백 */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* 큰 화면에서는 카드처럼 살짝 띄움 */

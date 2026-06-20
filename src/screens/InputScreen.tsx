@@ -101,7 +101,7 @@ export function InputScreen() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       {/* 날짜 네비 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 22px 12px', flex: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px 14px', flex: 'none' }}>
         <button onClick={() => setOffset((o) => o + 1)} aria-label="이전 날" style={navBtn}>‹</button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ font: '600 16px var(--font-sans)', color: 'var(--ink)' }}>{relDateLabel(offset)}</div>
@@ -219,14 +219,7 @@ export function InputScreen() {
 
         {composerOpen && (
           <div style={{ animation: 'slideIn .25s ease' }}>
-            <input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-              placeholder="무엇을 했나요?"
-              style={{ width: '100%', border: 'none', background: 'transparent', font: '500 17px var(--font-sans)', color: 'var(--ink)', outline: 'none', padding: '0 2px 12px', borderBottom: '1.5px solid var(--line-2)' }}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
               <button onClick={() => setUnits((u) => Math.max(1, u - 1))} aria-label="시간 줄이기" style={stepBtn}>−</button>
               <div style={{ flex: 1, textAlign: 'center', font: '500 22px var(--font-serif)', color: 'var(--ink)' }}>{fmtHM(units * 0.25)}</div>
               <button onClick={() => setUnits((u) => Math.min(48, u + 1))} aria-label="시간 늘리기" style={stepBtn}>＋</button>
@@ -262,10 +255,18 @@ export function InputScreen() {
               })}
             </div>
 
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+              placeholder="무엇을 했나요?"
+              style={{ width: '100%', marginTop: 20, border: 'none', background: 'transparent', font: '500 17px var(--font-sans)', color: 'var(--ink)', outline: 'none', padding: '0 2px 12px', borderBottom: '1.5px solid var(--line-2)' }}
+            />
+
             <button
               onClick={submit}
               disabled={!canAdd}
-              style={{ width: '100%', marginTop: 18, height: 52, borderRadius: 15, border: 'none', background: canAdd ? 'var(--olive)' : '#E4DDCD', color: canAdd ? 'var(--card)' : '#A89E8B', font: '600 16px var(--font-sans)', cursor: canAdd ? 'pointer' : 'default', transition: 'all .2s' }}
+              style={{ width: '100%', marginTop: 16, height: 52, borderRadius: 15, border: 'none', background: canAdd ? 'var(--olive)' : '#E4DDCD', color: canAdd ? 'var(--card)' : '#A89E8B', font: '600 16px var(--font-sans)', cursor: canAdd ? 'pointer' : 'default', transition: 'all .2s' }}
             >
               ＋ 항목 추가하기
             </button>
