@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { navigate } from '../router';
-import { f1, fmtHM } from '../lib/format';
+import { addDays, addMonths, f1, fmtHM, parseISODate, toISODate } from '../lib/format';
 import { buildFlow, categoryStats, periodStats } from '../lib/stats';
 import { periodFilter, ratioNote, RANGE_LABEL, RANGE_TITLE, recapLine } from '../lib/period';
 import { Card, EmptyState, ScreenHeader, SectionLabel } from '../components/ui';
@@ -16,20 +16,63 @@ const RANGES: { key: RangeKey; label: string }[] = [
   { key: 'day', label: '일' }, { key: 'week', label: '주' }, { key: 'month', label: '월' }, { key: 'year', label: '연' },
 ];
 
+/** anchor 가 가리키는 기간이 today 의 기간과 같거나 그 이후인가(다음 이동 불가) */
+function atLatestPeriod(anchor: Date, today: Date, range: RangeKey): boolean {
+  if (range === 'month') {
+    return anchor.getFullYear() > today.getFullYear()
+      || (anchor.getFullYear() === today.getFullYear() && anchor.getMonth() >= today.getMonth());
+  }
+  if (range === 'year') return anchor.getFullYear() >= today.getFullYear();
+  return toISODate(anchor) >= toISODate(today); // day, week
+}
+
 export function StatsMainScreen() {
   const { entries, categories, settings } = useStore();
   const coef = settings.resistanceCoef;
-  const today = startOfToday();
+  const today = useMemo(startOfToday, []);
 
   const [range, setRange] = useState<RangeKey>('month');
   const [maWin, setMaWin] = useState<7 | 30>(7);
   const [selBar, setSelBar] = useState<number | null>(null);
+  const [anchor, setAnchor] = useState<Date>(() => startOfToday());
 
-  const stats = useMemo(() => periodStats(entries, coef, today, range), [entries, coef, range, today]);
-  const flow = useMemo(() => buildFlow(entries, coef, today, range, maWin), [entries, coef, range, maWin, today]);
+  const atLatest = atLatestPeriod(anchor, today, range);
+
+  const shift = (dir: -1 | 1) => {
+    setSelBar(null);
+    if (dir === 1 && atLatest) return;
+    let next: Date;
+    if (range === 'day') next = addDays(anchor, dir);
+    else if (range === 'week') next = addDays(anchor, dir * 7);
+    else if (range === 'month') next = addMonths(anchor, dir);
+    else next = addMonths(anchor, dir * 12);
+    if (next > today) next = today;
+    setAnchor(next);
+  };
+
+  const pickDate = (iso: string) => {
+    if (!iso) return;
+    setSelBar(null);
+    let d = parseISODate(iso);
+    if (d > today) d = today;
+    setAnchor(d);
+  };
+
+  const changeRange = (r: RangeKey) => {
+    setRange(r);
+    setSelBar(null);
+  };
+
+  const earliestIso = useMemo(() => {
+    if (entries.length === 0) return undefined;
+    return entries.reduce((min, e) => (e.date < min ? e.date : min), entries[0].date);
+  }, [entries]);
+
+  const stats = useMemo(() => periodStats(entries, coef, anchor, range), [entries, coef, range, anchor]);
+  const flow = useMemo(() => buildFlow(entries, coef, anchor, range, maWin), [entries, coef, range, maWin, anchor]);
   const cats = useMemo(
-    () => categoryStats(entries, categories, coef, periodFilter(range, today)).filter((c) => c.effort > 0),
-    [entries, categories, coef, range, today],
+    () => categoryStats(entries, categories, coef, periodFilter(range, anchor)).filter((c) => c.effort > 0),
+    [entries, categories, coef, range, anchor],
   );
 
   const hasAny = entries.length > 0;
@@ -59,20 +102,43 @@ export function StatsMainScreen() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <ScreenHeader title="통계" sub={RANGE_TITLE[range](today)} />
+      <ScreenHeader title="통계" />
       <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
         {/* 기간 토글 */}
         <div style={{ display: 'flex', background: '#F0EADE', borderRadius: 12, padding: 4, gap: 3 }}>
           {RANGES.map((r) => {
             const a = range === r.key;
             return (
-              <button key={r.key} onClick={() => { setRange(r.key); setSelBar(null); }}
+              <button key={r.key} onClick={() => changeRange(r.key)}
                 style={{ flex: 1, border: 'none', borderRadius: 9, padding: '9px 0', font: '500 13px var(--font-sans)', cursor: 'pointer', background: a ? 'var(--ink)' : 'transparent', color: a ? 'var(--card)' : '#8B8270', transition: 'all .2s' }}>
                 {r.label}
               </button>
             );
           })}
         </div>
+
+        {/* 기간 네비게이터: ‹ — 날짜(선택) — › */}
+        {hasAny && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <button onClick={() => shift(-1)} aria-label="이전 기간" style={periodNavBtn}>‹</button>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <button style={{ width: '100%', height: 40, borderRadius: 11, border: '1px solid #E4DCCB', background: 'var(--card)', color: 'var(--ink)', font: '500 14px var(--font-sans)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {RANGE_TITLE[range](anchor)}
+                <span style={{ color: 'var(--ink-mute)', fontSize: 11 }}>▾</span>
+              </button>
+              <input
+                type="date"
+                value={toISODate(anchor)}
+                min={earliestIso}
+                max={toISODate(today)}
+                onChange={(e) => pickDate(e.target.value)}
+                aria-label="날짜 선택"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none' }}
+              />
+            </div>
+            <button onClick={() => shift(1)} disabled={atLatest} aria-label="다음 기간" style={{ ...periodNavBtn, opacity: atLatest ? 0.28 : 1, cursor: atLatest ? 'default' : 'pointer' }}>›</button>
+          </div>
+        )}
 
         {!hasAny ? (
           <div style={{ marginTop: 16 }}>
@@ -253,6 +319,11 @@ function EnterCard({ onClick, big, sub }: { onClick: () => void; big: string; su
     </button>
   );
 }
+
+const periodNavBtn: React.CSSProperties = {
+  width: 40, height: 40, flex: 'none', borderRadius: 11, border: '1px solid #E4DCCB',
+  background: 'var(--card)', color: 'var(--ink-soft)', fontSize: 18, cursor: 'pointer',
+};
 
 const linkBtn: React.CSSProperties = {
   width: '100%', marginTop: 14, height: 42, borderRadius: 12, border: '1px solid #E4DCCB',

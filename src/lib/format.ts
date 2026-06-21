@@ -59,6 +59,17 @@ export function addDays(d: Date, n: number): Date {
   return x;
 }
 
+/** 월 단위 이동(말일 보정) */
+export function addMonths(d: Date, n: number): Date {
+  const x = new Date(d);
+  const day = x.getDate();
+  x.setDate(1);
+  x.setMonth(x.getMonth() + n);
+  const last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate();
+  x.setDate(Math.min(day, last));
+  return x;
+}
+
 export const dowName = (d: Date): string => DOW[d.getDay()];
 
 /** '6월 20일 토요일' */
