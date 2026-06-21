@@ -96,10 +96,10 @@ export function ReportScreen() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <BackHeader title="월간 리포트" />
       <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 22, padding: '24px 22px', boxShadow: '0 8px 28px rgba(90,70,35,.1)', animation: 'fadeUp .5s ease' }}>
-          <div style={{ textAlign: 'center', borderBottom: '1.5px dashed #E0D8C8', paddingBottom: 18 }}>
-            <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.18em', color: 'var(--clay-accent)', textTransform: 'uppercase' }}>{today.getFullYear()} · MONTHLY</div>
-            <div style={{ font: '600 30px var(--font-serif)', color: 'var(--ink)', marginTop: 8 }}>{monthLabel}의 노력 리포트</div>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: "var(--r-card)", padding: '24px 22px', boxShadow: 'var(--shadow-raised)', animation: 'fadeUp .5s ease' }}>
+          <div style={{ textAlign: 'center', borderBottom: '1.5px dashed var(--border-bold)', paddingBottom: 18 }}>
+            <div style={{ font: '700 13px var(--font-sans)', color: 'var(--clay-accent)' }}>{today.getFullYear()}년 월간 요약</div>
+            <div style={{ font: '600 30px var(--font-serif)', color: 'var(--ink)', marginTop: 6 }}>{monthLabel}의 노력 리포트</div>
           </div>
 
           <div style={{ display: 'flex', margin: '20px 0' }}>
@@ -121,29 +121,29 @@ export function ReportScreen() {
             <Row label="가장 노력한 날" value={bestDay} color="var(--ink)" last />
           </div>
 
-          <div style={{ background: 'var(--olive)', borderRadius: 16, padding: 18 }}>
-            <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.1em', color: '#C7CCB2', textTransform: 'uppercase' }}>이번 달 노력 스타일</div>
+          <div style={{ background: 'var(--olive)', borderRadius: "var(--r-card)", padding: 18 }}>
+            <div style={{ font: '700 12px var(--font-sans)', color: 'rgba(255,255,255,0.8)' }}>이번 달 노력 스타일</div>
             <div style={{ font: '500 24px var(--font-serif)', color: 'var(--card)', margin: '8px 0' }}>{r.style}</div>
-            <div style={{ font: '400 13px/1.6 var(--font-sans)', color: '#E4E6D8' }}>{r.note}</div>
+            <div style={{ font: '400 13px/1.6 var(--font-sans)', color: 'rgba(255,255,255,0.85)' }}>{r.note}</div>
           </div>
 
-          <div style={{ marginTop: 16, background: 'var(--card-2)', borderRadius: 14, padding: 16 }}>
+          <div style={{ marginTop: 16, background: 'var(--card-2)', borderRadius: "var(--r-card)", padding: 16 }}>
             <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.06em', color: 'var(--clay-accent)', marginBottom: 7 }}>다음 달을 위한 한 줄</div>
-            <div style={{ font: '400 14px/1.6 var(--font-sans)', color: '#6B5A48' }}>
+            <div style={{ font: '400 14px/1.6 var(--font-sans)', color: 'var(--ink-soft)' }}>
               {r.clayPct >= 45
                 ? `이번 달은 ${clayCount}번의 버텨낸 순간이 있었어요. 다음 달엔 가볍게 쌓는 날도 의식적으로 넣어보세요.`
                 : '다음 달엔 작은 기록을 자주 쌓아보세요. 하루 한 줄이면 충분합니다.'}
             </div>
           </div>
 
-          <div style={{ textAlign: 'center', borderTop: '1.5px dashed #E0D8C8', marginTop: 20, paddingTop: 16 }}>
-            <div style={{ font: '400 11px var(--font-sans)', color: '#C3B9A4' }}>묵묵히 쌓은 {monthLabel}의 기록</div>
+          <div style={{ textAlign: 'center', borderTop: '1.5px dashed var(--border-bold)', marginTop: 20, paddingTop: 16 }}>
+            <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)' }}>묵묵히 쌓은 {monthLabel}의 기록</div>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <button onClick={onSave} style={{ flex: 1, height: 48, borderRadius: 14, border: '1px solid #E4DCCB', background: 'var(--card)', color: 'var(--ink-soft)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>저장하기</button>
-          <button onClick={onShare} style={{ flex: 1, height: 48, borderRadius: 14, border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>공유하기</button>
+          <button onClick={onSave} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-soft)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>저장하기</button>
+          <button onClick={onShare} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>공유하기</button>
         </div>
         {shareMsg && <div style={{ textAlign: 'center', font: '400 12px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 12 }}>{shareMsg}</div>}
       </div>
@@ -161,7 +161,7 @@ function BigCell({ value, label }: { value: string; label: string }) {
 }
 function MidCell({ value, label, color }: { value: string; label: string; color?: string }) {
   return (
-    <div style={{ flex: 1, background: 'var(--card-2)', borderRadius: 12, padding: 13, textAlign: 'center' }}>
+    <div style={{ flex: 1, background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: 13, textAlign: 'center' }}>
       <div style={{ font: '500 22px var(--font-serif)', color: color ?? 'var(--ink)' }}>{value}</div>
       <div style={{ font: '400 10.5px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>{label}</div>
     </div>
@@ -169,7 +169,7 @@ function MidCell({ value, label, color }: { value: string; label: string; color?
 }
 function Row({ label, value, color, last }: { label: string; value: string; color: string; last?: boolean }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 13px var(--font-sans)', color: 'var(--ink-soft)', borderBottom: last ? 'none' : '1px solid #F1EADC', paddingBottom: last ? 0 : 10 }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 13px var(--font-sans)', color: 'var(--ink-soft)', borderBottom: last ? 'none' : '1px solid var(--line-2)', paddingBottom: last ? 0 : 10 }}>
       <span>{label}</span>
       <b style={{ fontWeight: 600, color }}>{value}</b>
     </div>

@@ -5,6 +5,7 @@ import {
   addDays, fmtHM, fullDateLabel, relDateLabel, resWord, toISODate, f1,
 } from '../lib/format';
 import { streaks } from '../lib/stats';
+import { Lozenge } from '../components/ui';
 import type { Resistance } from '../types';
 
 const startOfToday = () => {
@@ -124,15 +125,10 @@ export function InputScreen() {
         style={{ flex: 1, padding: `0 18px ${composerOpen ? 320 : 150}px`, transition: 'padding .3s ease' }}
       >
         {/* 누적 카드 */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 22, padding: 20, boxShadow: '0 4px 16px rgba(90,70,35,.05)' }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: "var(--r-card)", padding: 20, boxShadow: 'var(--shadow-raised)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ font: '500 13px var(--font-sans)', color: '#8B8270' }}>{offset === 0 ? '오늘의 노력' : '그날의 노력'}</span>
-            {streak > 0 && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--card-2)', borderRadius: 99, padding: '5px 11px' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--clay)' }} />
-                <span style={{ font: '500 12px var(--font-sans)', color: 'var(--clay-accent)' }}>연속 {streak}일</span>
-              </span>
-            )}
+            <span style={{ font: '500 13px var(--font-sans)', color: 'var(--ink-soft)' }}>{offset === 0 ? '오늘의 노력' : '그날의 노력'}</span>
+            {streak > 0 && <Lozenge tone="clay" dot>연속 {streak}일</Lozenge>}
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', margin: '10px 0 18px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, color: 'var(--ink)', font: '500 60px var(--font-serif)', lineHeight: 0.9 }}>
@@ -150,7 +146,7 @@ export function InputScreen() {
               </div>
             </div>
           </div>
-          <div style={{ height: 13, borderRadius: 99, background: '#ECE4D4', overflow: 'hidden', display: 'flex' }}>
+          <div style={{ height: 13, borderRadius: 99, background: 'var(--card-2)', overflow: 'hidden', display: 'flex' }}>
             <div style={{ width: `${joyW}%`, background: 'var(--olive)', transition: 'width .55s cubic-bezier(.2,.8,.3,1)' }} />
             <div style={{ width: `${clayW}%`, background: 'var(--clay)', transition: 'width .55s cubic-bezier(.2,.8,.3,1)' }} />
           </div>
@@ -165,7 +161,7 @@ export function InputScreen() {
         </div>
 
         {dayItems.length === 0 ? (
-          <div style={{ background: 'var(--card)', border: '1px solid var(--line-2)', borderRadius: 16, padding: '26px 18px', textAlign: 'center' }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--line-2)', borderRadius: "var(--r-card)", padding: '26px 18px', textAlign: 'center' }}>
             <div style={{ font: '400 13px/1.7 var(--font-sans)', color: 'var(--ink-mute)' }}>
               아직 비어 있어요.<br />아래에서 오늘 한 일을 한 줄 적어보세요.
             </div>
@@ -176,13 +172,13 @@ export function InputScreen() {
               const cat = catMap.get(it.categoryId);
               const color = cat?.color ?? 'var(--olive)';
               return (
-                <div key={it.id} style={{ background: 'var(--card)', border: '1px solid var(--line-2)', borderRadius: 16, padding: '14px 15px', display: 'flex', alignItems: 'center', gap: 13, animation: 'slideIn .35s ease' }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 11, background: 'var(--card-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                <div key={it.id} style={{ background: 'var(--card)', border: '1px solid var(--line-2)', borderRadius: "var(--r-card)", padding: '14px 15px', display: 'flex', alignItems: 'center', gap: 13, animation: 'slideIn .35s ease' }}>
+                  <div style={{ width: 38, height: 38, borderRadius: "var(--r-card-sm)", background: 'var(--card-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
                     <span style={{ width: 11, height: 11, borderRadius: 4, background: color }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ font: '500 15px var(--font-sans)', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.text}</div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 5, font: '400 12px var(--font-sans)', color: '#9A917F' }}>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 5, font: '400 12px var(--font-sans)', color: 'var(--ink-mute)' }}>
                       <span style={{ color, fontWeight: 500 }}>{cat?.name ?? '기타'}</span>
                       <span>·</span><span>{fmtHM(entryHours(it))}</span>
                       <span>·</span><span>{resWord(it.resistance)}</span>
@@ -190,9 +186,9 @@ export function InputScreen() {
                   </div>
                   <div style={{ textAlign: 'right', flex: 'none' }}>
                     <div style={{ font: '500 19px var(--font-serif)', color: 'var(--ink)' }}>{f1(entryEffort(it, coef))}</div>
-                    <div style={{ font: '400 10px var(--font-sans)', color: '#B4AB98' }}>점</div>
+                    <div style={{ font: '400 10px var(--font-sans)', color: 'var(--ink-mute)' }}>점</div>
                   </div>
-                  <button onClick={() => removeEntry(it.id)} aria-label="삭제" style={{ width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'transparent', color: '#C3B9A4', fontSize: 16, cursor: 'pointer', flex: 'none' }}>×</button>
+                  <button onClick={() => removeEntry(it.id)} aria-label="삭제" style={{ width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'transparent', color: 'var(--ink-mute)', fontSize: 16, cursor: 'pointer', flex: 'none' }}>×</button>
                 </div>
               );
             })}
@@ -203,7 +199,7 @@ export function InputScreen() {
       {/* 컴포저 시트 */}
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 64, zIndex: 5, background: 'var(--card)', borderTop: '1px solid #E8E0D0', borderRadius: '24px 24px 0 0', padding: '10px 18px 16px', boxShadow: '0 -8px 28px rgba(80,60,30,.1)', transform: dragDy ? `translateY(${dragDy}px)` : undefined, transition: dragging ? 'none' : 'transform .25s cubic-bezier(.2,.8,.3,1)' }}
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 64, zIndex: 5, background: 'var(--card)', borderTop: '1px solid var(--line)', borderRadius: '16px 16px 0 0', padding: '10px 18px 16px', boxShadow: 'var(--shadow-overlay)', transform: dragDy ? `translateY(${dragDy}px)` : undefined, transition: dragging ? 'none' : 'transform .25s cubic-bezier(.2,.8,.3,1)' }}
       >
         <button
           onClick={onHandleClick}
@@ -214,7 +210,7 @@ export function InputScreen() {
           aria-label="입력창 펼치기/접기 (탭 또는 드래그)"
           style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0 14px', touchAction: 'none' }}
         >
-          <div style={{ width: 38, height: 4, borderRadius: 99, background: '#E0D8C8' }} />
+          <div style={{ width: 38, height: 4, borderRadius: 99, background: 'var(--border-bold)' }} />
         </button>
 
         {composerOpen && (
@@ -227,14 +223,14 @@ export function InputScreen() {
 
             <div style={{ marginTop: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 9 }}>
-                <span style={{ font: '500 13px var(--font-sans)', color: '#8B8270' }}>저항도</span>
+                <span style={{ font: '500 13px var(--font-sans)', color: 'var(--ink-soft)' }}>저항도</span>
                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
                   <span style={{ font: '500 18px var(--font-serif)', color: 'var(--clay)' }}>{resistance}</span>
-                  <span style={{ font: '400 12px var(--font-sans)', color: '#9A917F' }}>{resWord(resistance)}</span>
+                  <span style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-mute)' }}>{resWord(resistance)}</span>
                 </span>
               </div>
               <input type="range" className="res" min={0} max={5} step={1} value={resistance} onChange={(e) => setResistance(Number(e.target.value) as Resistance)} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 10.5px var(--font-sans)', color: '#B4AB98', marginTop: 5 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 10.5px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 5 }}>
                 <span>편하게 함</span><span>나를 이김</span>
               </div>
             </div>
@@ -246,7 +242,7 @@ export function InputScreen() {
                   <button
                     key={c.id}
                     onClick={() => setCatId(c.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 99, font: '500 13px var(--font-sans)', cursor: 'pointer', transition: 'all .15s', background: sel ? 'var(--card)' : 'transparent', border: `1.5px solid ${sel ? c.color : '#E2DACB'}`, color: sel ? 'var(--ink)' : '#8B8270' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 99, font: '500 13px var(--font-sans)', cursor: 'pointer', transition: 'all .15s', background: sel ? 'var(--card)' : 'transparent', border: `1.5px solid ${sel ? c.color : 'var(--line)'}`, color: sel ? 'var(--ink)' : 'var(--ink-soft)' }}
                   >
                     <span style={{ width: 8, height: 8, borderRadius: 3, background: c.color, opacity: sel ? 1 : 0.45 }} />
                     {c.name}
@@ -266,7 +262,7 @@ export function InputScreen() {
             <button
               onClick={submit}
               disabled={!canAdd}
-              style={{ width: '100%', marginTop: 16, height: 52, borderRadius: 15, border: 'none', background: canAdd ? 'var(--olive)' : '#E4DDCD', color: canAdd ? 'var(--card)' : '#A89E8B', font: '600 16px var(--font-sans)', cursor: canAdd ? 'pointer' : 'default', transition: 'all .2s' }}
+              style={{ width: '100%', marginTop: 16, height: 52, borderRadius: 10, border: 'none', background: canAdd ? 'var(--olive)' : 'var(--card-2)', color: canAdd ? 'var(--card)' : 'var(--ink-mute)', font: '600 16px var(--font-sans)', cursor: canAdd ? 'pointer' : 'default', transition: 'all .2s' }}
             >
               ＋ 항목 추가하기
             </button>
@@ -287,10 +283,10 @@ function Legend({ color, label }: { color: string; label: string }) {
 }
 
 const navBtn: React.CSSProperties = {
-  width: 34, height: 34, borderRadius: '50%', border: '1px solid #E4DCCB',
+  width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--line)',
   background: 'var(--card)', color: 'var(--ink-soft)', fontSize: 16, cursor: 'pointer',
 };
 const stepBtn: React.CSSProperties = {
-  width: 44, height: 44, borderRadius: 13, border: '1px solid #E4DCCB',
+  width: 44, height: 44, borderRadius: "var(--r-card-sm)", border: '1px solid var(--line)',
   background: 'var(--surface)', color: 'var(--ink-soft)', fontSize: 22, cursor: 'pointer', flex: 'none',
 };

@@ -29,7 +29,7 @@ export function BottomTabs({ active }: { active: Route['tab'] }) {
             onClick={() => navigate(t.path)}
             style={{
               border: 'none', background: 'transparent', textAlign: 'center',
-              color: on ? 'var(--olive)' : '#B4AB98', cursor: 'pointer',
+              color: on ? 'var(--olive)' : 'var(--ink-mute)', cursor: 'pointer',
             }}
           >
             <div style={{ font: '600 13px var(--font-serif)' }}>{t.icon}</div>

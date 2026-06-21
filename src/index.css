@@ -1,17 +1,39 @@
 :root {
-  --bg: #e9e2d4;
-  --surface: #f3eee3;
-  --card: #fbf8f1;
-  --card-2: #f4ede0;
-  --line: #eae2d2;
-  --line-2: #ece5d6;
-  --ink: #3a352c;
-  --ink-soft: #6b6358;
-  --ink-mute: #a39a86;
+  /* ── Surfaces & neutrals (warm, Atlassian "white page + bordered cards") ── */
+  --bg: #ece6da;          /* 데스크톱 바깥 배경 */
+  --surface: #f6f2ea;     /* 페이지(앱) 배경 */
+  --card: #ffffff;        /* 카드 표면 */
+  --card-2: #f4f0e7;      /* sunken well / 타일 / 트랙 */
+  --sunken: #f4f0e7;
+  --line: #e7e1d4;        /* 헤어라인 보더 */
+  --line-2: #efeadf;      /* 옅은 구분선 */
+  --border-bold: #d7cfbf;
+
+  /* ── Text ── */
+  --ink: #26231e;         /* 본문/제목 */
+  --ink-soft: #5a5347;    /* 보조 메타 */
+  --ink-mute: #8a8273;    /* 플레이스홀더/힌트 */
+
+  /* ── Brand: olive(즐겁게/적립) · clay(버텨냄/성장) ── */
   --olive: #6f7252;
   --olive-2: #8a9b6b;
+  --olive-text: #50612f;  /* 밝은 배경 위 올리브 텍스트(대비 확보) */
+  --olive-subtle: #eaefd8;/* 로젠지 배경 */
   --clay: #c07b53;
-  --clay-accent: #a9743e;
+  --clay-accent: #9a5a30; /* 밝은 배경 위 클레이 텍스트 */
+  --clay-subtle: #f6e1d1; /* 로젠지 배경 */
+  --neutral-subtle: #ece7db;
+
+  /* ── Elevation (subtle, Atlassian raised/overlay) ── */
+  --shadow-raised: 0 1px 1px rgba(57, 44, 20, 0.17), 0 0 1px rgba(57, 44, 20, 0.31);
+  --shadow-overlay: 0 8px 12px rgba(57, 44, 20, 0.15), 0 0 1px rgba(57, 44, 20, 0.31);
+
+  /* ── Radius (t-shirt scale) ── */
+  --r-tag: 4px;
+  --r-ctl: 6px;
+  --r-card-sm: 8px;
+  --r-card: 12px;
+  --r-pill: 999px;
 
   --font-serif: 'Fraunces', 'Noto Serif KR', Georgia, 'Times New Roman', serif;
   --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
@@ -31,9 +53,12 @@ body {
 
 body {
   font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--ink);
   background: var(--bg);
-  /* 데스크톱에서 보면 가운데 정렬, 모바일에서는 꽉 채움 */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   display: flex;
   justify-content: center;
 }
@@ -47,12 +72,10 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  /* 노치/상태바 안전영역 + 기본 상단 숨통, 하단 홈 인디케이터 여백 */
   padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* 큰 화면에서는 카드처럼 살짝 띄움 */
 @media (min-width: 520px) {
   body {
     align-items: center;
@@ -60,59 +83,65 @@ body {
   }
   #root {
     height: min(880px, 96dvh);
-    border-radius: 28px;
-    box-shadow: 0 24px 60px rgba(70, 50, 25, 0.18);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(57, 44, 20, 0.16), 0 0 1px rgba(57, 44, 20, 0.3);
   }
 }
 
 button {
   font-family: inherit;
 }
-
 input,
-textarea {
+textarea,
+select {
   font-family: inherit;
 }
 
-/* 저항도/계수 슬라이더 */
+/* 키보드 포커스 링 (Atlassian: 2px, +2px offset) — 따뜻한 올리브 */
+:focus-visible {
+  outline: 2px solid var(--olive);
+  outline-offset: 2px;
+}
+
+/* 저항도/계수 슬라이더 — 트랙은 올리브→클레이 의미 그라데이션 유지 */
 .res {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 24px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   outline: none;
   cursor: pointer;
   background: transparent;
 }
 .res::-webkit-slider-runnable-track {
-  height: 8px;
-  border-radius: 999px;
+  height: 6px;
+  border-radius: var(--r-pill);
   background: linear-gradient(90deg, #7e8b57, #c49b6a, #c07b53);
 }
 .res::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #fbf8f1;
-  border: 2.5px solid #be7b5a;
-  box-shadow: 0 2px 6px rgba(80, 50, 25, 0.28);
+  background: #ffffff;
+  border: 2.5px solid var(--clay);
+  box-shadow: var(--shadow-raised);
   cursor: pointer;
   margin-top: -8px;
 }
 .res::-moz-range-track {
-  height: 8px;
-  border-radius: 999px;
+  height: 6px;
+  border-radius: var(--r-pill);
   background: linear-gradient(90deg, #7e8b57, #c49b6a, #c07b53);
 }
 .res::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #fbf8f1;
-  border: 2.5px solid #be7b5a;
+  background: #ffffff;
+  border: 2.5px solid var(--clay);
   cursor: pointer;
 }
 
@@ -128,37 +157,17 @@ textarea {
 }
 
 @keyframes pop {
-  0% {
-    transform: scale(0.55);
-    opacity: 0.2;
-  }
-  55% {
-    transform: scale(1.09);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.6); opacity: 0.3; }
+  55% { transform: scale(1.07); }
+  100% { transform: scale(1); opacity: 1; }
 }
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

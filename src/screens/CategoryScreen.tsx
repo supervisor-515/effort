@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { f1, fmtHM } from '../lib/format';
 import { categoryStats } from '../lib/stats';
 import { categoryInsight } from '../lib/insights';
-import { BackHeader, Card, EmptyState, SectionLabel } from '../components/ui';
+import { BackHeader, Card, EmptyState, Lozenge, SectionLabel } from '../components/ui';
 
 export function CategoryScreen() {
   const { entries, categories, settings } = useStore();
@@ -54,14 +54,14 @@ export function CategoryScreen() {
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)' }}>{fmtHM(c.hours)}</span>
-                      <span style={{ background: c.avgRes >= 3 ? '#F0DDCF' : '#E7EADD', color: c.avgRes >= 3 ? 'var(--clay-accent)' : 'var(--olive)', borderRadius: 99, padding: '3px 8px', font: '500 10.5px var(--font-sans)' }}>저항 {f1(c.avgRes)}</span>
+                      <Lozenge tone={c.avgRes >= 3 ? 'clay' : 'olive'}>저항 {f1(c.avgRes)}</Lozenge>
                     </span>
                   </div>
-                  <div style={{ height: 10, borderRadius: 99, background: '#F0EADE', overflow: 'hidden', display: 'flex' }}>
+                  <div style={{ height: 10, borderRadius: 99, background: 'var(--card-2)', overflow: 'hidden', display: 'flex' }}>
                     <div style={{ width: `${(w * (1 - cr)).toFixed(1)}%`, height: '100%', background: c.color }} />
                     <div style={{ width: `${(w * cr).toFixed(1)}%`, height: '100%', background: c.color, opacity: 0.45 }} />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, font: '400 10.5px var(--font-sans)', color: '#B4AB98' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, font: '400 10.5px var(--font-sans)', color: 'var(--ink-mute)' }}>
                     <span>{f1(c.effort)}점</span><span>버텨낸 비율 {Math.round(cr * 100)}%</span>
                   </div>
                 </div>
@@ -69,11 +69,11 @@ export function CategoryScreen() {
             })}
           </div>
           {selId && (
-            <div style={{ marginTop: 16, background: 'var(--card-2)', borderRadius: 12, padding: '13px 15px', animation: 'slideIn .3s ease' }}>
+            <div style={{ marginTop: 16, background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: '13px 15px', animation: 'slideIn .3s ease' }}>
               <div style={{ font: '500 13px var(--font-sans)', color: 'var(--ink)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 3, background: sel.color }} />{sel.name}
               </div>
-              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{selInsight}</div>
+              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)' }}>{selInsight}</div>
             </div>
           )}
         </Card>
@@ -84,15 +84,15 @@ export function CategoryScreen() {
           {byGrowth.slice(0, 5).map((c, i) => {
             const first = i === 0;
             return (
-              <div key={c.id} style={{ background: 'var(--card)', border: `1px solid ${first ? '#D8C3A8' : 'var(--line)'}`, borderRadius: first ? 20 : 16, padding: first ? '20px 18px' : '15px 16px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 4px 16px rgba(90,70,35,.05)' }}>
-                <div style={{ font: `500 ${first ? 26 : 19}px var(--font-serif)`, color: first ? 'var(--clay)' : '#C3B9A4', width: 28, textAlign: 'center', flex: 'none' }}>{i + 1}</div>
+              <div key={c.id} style={{ background: 'var(--card)', border: `1px solid ${first ? 'var(--border-bold)' : 'var(--line)'}`, borderRadius: first ? 20 : 16, padding: first ? '20px 18px' : '15px 16px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: 'var(--shadow-raised)' }}>
+                <div style={{ font: `500 ${first ? 26 : 19}px var(--font-serif)`, color: first ? 'var(--clay)' : 'var(--ink-mute)', width: 28, textAlign: 'center', flex: 'none' }}>{i + 1}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ font: `500 ${first ? 18 : 15}px var(--font-sans)`, color: 'var(--ink)' }}>{c.name}</div>
                   <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 3 }}>평균 저항 {f1(c.avgRes)} · {fmtHM(c.hours)}</div>
                 </div>
                 <div style={{ textAlign: 'right', flex: 'none' }}>
                   <div style={{ font: `500 ${first ? 26 : 20}px var(--font-serif)`, color: c.color }}>{f1(c.growth)}</div>
-                  <div style={{ font: '400 10px var(--font-sans)', color: '#B4AB98' }}>성장점수</div>
+                  <div style={{ font: '400 10px var(--font-sans)', color: 'var(--ink-mute)' }}>성장점수</div>
                 </div>
               </div>
             );
@@ -102,12 +102,12 @@ export function CategoryScreen() {
         {/* 노력 사분면 */}
         <SectionLabel>노력 사분면 · 시간 × 저항</SectionLabel>
         <Card>
-          <div style={{ position: 'relative', width: '100%', height: 240, background: '#FAF6EC', borderRadius: 14, overflow: 'hidden' }}>
+          <div style={{ position: 'relative', width: '100%', height: 240, background: 'var(--card-2)', borderRadius: "var(--r-card)", overflow: 'hidden' }}>
             <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: 'var(--line)' }} />
             <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: 'var(--line)' }} />
-            <Quad pos={{ top: 8, left: 10 }} color="#C3B9A4">시간 적고 저항 높음<br />· 미루는 영역</Quad>
+            <Quad pos={{ top: 8, left: 10 }} color="var(--ink-mute)">시간 적고 저항 높음<br />· 미루는 영역</Quad>
             <Quad pos={{ top: 8, right: 10 }} color="var(--clay)" align="right">시간 많고 저항 높음<br />· 성장 영역</Quad>
-            <Quad pos={{ bottom: 8, left: 10 }} color="#C3B9A4">시간 적고 저항 낮음<br />· 가볍게 하는 일</Quad>
+            <Quad pos={{ bottom: 8, left: 10 }} color="var(--ink-mute)">시간 적고 저항 낮음<br />· 가볍게 하는 일</Quad>
             <Quad pos={{ bottom: 8, right: 10 }} color="var(--olive)" align="right">시간 많고 저항 낮음<br />· 잘 맞는 루틴</Quad>
             {cats.map((c) => {
               const left = 8 + (c.hours / maxH) * 80;
@@ -122,11 +122,11 @@ export function CategoryScreen() {
               );
             })}
           </div>
-          <div style={{ marginTop: 14, background: 'var(--card-2)', borderRadius: 12, padding: '13px 15px' }}>
+          <div style={{ marginTop: 14, background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: '13px 15px' }}>
             <div style={{ font: '500 13px var(--font-sans)', color: 'var(--ink)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 9, height: 9, borderRadius: 3, background: sel.color }} />{sel.name}
             </div>
-            <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B6F4E' }}>{selInsight}</div>
+            <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)' }}>{selInsight}</div>
           </div>
         </Card>
       </div>

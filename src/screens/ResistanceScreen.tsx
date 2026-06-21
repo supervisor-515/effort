@@ -91,12 +91,12 @@ export function ResistanceScreen() {
         </Card>
 
         {/* 회복 신호 */}
-        <div style={{ background: '#EFE3D6', border: '1px solid #E3D2BF', borderRadius: 20, padding: 18, marginTop: 14 }}>
+        <div style={{ background: 'var(--clay-subtle)', border: '1px solid var(--clay-subtle)', borderRadius: "var(--r-card)", padding: 18, marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--clay)' }} />
             <span style={{ font: '600 13px var(--font-sans)', color: 'var(--clay-accent)' }}>{recoveryHeading(data.recRes, data.recPrevRes)}</span>
           </div>
-          <div style={{ font: '400 14px/1.6 var(--font-sans)', color: '#6B5A48' }}>{recoveryNote(data.recRes, data.recPrevRes)}</div>
+          <div style={{ font: '400 14px/1.6 var(--font-sans)', color: 'var(--ink-soft)' }}>{recoveryNote(data.recRes, data.recPrevRes)}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             <RecCell value={f1(data.recRes)} label="최근7일 평균저항" color="var(--clay)" />
             <RecCell value={f1(data.recPrevRes)} label="직전7일 평균저항" color="var(--olive)" />
@@ -118,7 +118,7 @@ export function ResistanceScreen() {
               </div>
             ))}
           </div>
-          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 12 }}>{sixMonthNote(data.ratioMonths)}</div>
+          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)', marginTop: 12 }}>{sixMonthNote(data.ratioMonths)}</div>
         </Card>
 
         {/* 요일별 저항도 */}
@@ -159,12 +159,12 @@ export function ResistanceScreen() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 }}>
                     {data.heat.flatMap((row, b) => row.map((cell, d) => (
-                      <div key={`${b}-${d}`} style={{ aspectRatio: '1', borderRadius: 4, background: cell.has ? mix('#6F7252', '#C07B53', (cell.avg - 0.5) / 4) : '#EFE8DA' }} />
+                      <div key={`${b}-${d}`} style={{ aspectRatio: '1', borderRadius: 4, background: cell.has ? mix('#6F7252', '#C07B53', (cell.avg - 0.5) / 4) : 'var(--card-2)' }} />
                     )))}
                   </div>
                 </div>
               </div>
-              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', marginTop: 14 }}>{heatNote(data.heat)}</div>
+              <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)', marginTop: 14 }}>{heatNote(data.heat)}</div>
             </>
           ) : (
             <div style={{ font: '400 12px/1.6 var(--font-sans)', color: 'var(--ink-mute)', marginTop: 14 }}>시간대 정보가 있는 기록이 아직 적어요. 항목을 추가하면 칸이 채워져요.</div>
@@ -180,7 +180,7 @@ function Note({ children }: { children: React.ReactNode }) {
 }
 function RecCell({ value, label, color }: { value: string; label: string; color: string }) {
   return (
-    <div style={{ flex: 1, background: '#FBF6EE', borderRadius: 11, padding: 11 }}>
+    <div style={{ flex: 1, background: 'var(--card)', borderRadius: "var(--r-card-sm)", padding: 11 }}>
       <div style={{ font: '500 16px var(--font-serif)', color }}>{value}</div>
       <div style={{ font: '400 10px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>{label}</div>
     </div>

@@ -129,12 +129,12 @@ export function StatsMainScreen() {
       <ScreenHeader title="통계" />
       <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
         {/* 기간 토글 */}
-        <div style={{ display: 'flex', background: '#F0EADE', borderRadius: 12, padding: 4, gap: 3 }}>
+        <div style={{ display: 'flex', background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: 4, gap: 3 }}>
           {RANGES.map((r) => {
             const a = range === r.key;
             return (
               <button key={r.key} onClick={() => changeRange(r.key)}
-                style={{ flex: 1, border: 'none', borderRadius: 9, padding: '9px 0', font: '500 13px var(--font-sans)', cursor: 'pointer', background: a ? 'var(--ink)' : 'transparent', color: a ? 'var(--card)' : '#8B8270', transition: 'all .2s' }}>
+                style={{ flex: 1, border: 'none', borderRadius: 9, padding: '9px 0', font: '500 13px var(--font-sans)', cursor: 'pointer', background: a ? 'var(--ink)' : 'transparent', color: a ? 'var(--card)' : 'var(--ink-soft)', transition: 'all .2s' }}>
                 {r.label}
               </button>
             );
@@ -146,7 +146,7 @@ export function StatsMainScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
             <button onClick={() => shift(-1)} aria-label="이전 기간" style={periodNavBtn}>‹</button>
             <div style={{ flex: 1, position: 'relative' }}>
-              <button style={{ width: '100%', height: 40, borderRadius: 11, border: '1px solid #E4DCCB', background: 'var(--card)', color: 'var(--ink)', font: '500 14px var(--font-sans)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <button style={{ width: '100%', height: 40, borderRadius: "var(--r-card-sm)", border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink)', font: '500 14px var(--font-sans)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 {RANGE_TITLE[range](anchor)}
                 <span style={{ color: 'var(--ink-mute)', fontSize: 11 }}>▾</span>
               </button>
@@ -194,10 +194,10 @@ export function StatsMainScreen() {
         ) : (
           <>
             {/* 요약 카드 */}
-            <Card style={{ borderRadius: 22, padding: 20, marginTop: 14 }}>
+            <Card style={{ borderRadius: "var(--r-card)", padding: 20, marginTop: 14 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <div style={{ font: '400 12px var(--font-sans)', color: '#8B8270' }}>{RANGE_LABEL[range]} 노력량</div>
+                  <div style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>{RANGE_LABEL[range]} 노력량</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
                     <span style={{ font: '500 52px var(--font-serif)', lineHeight: 0.9, color: 'var(--ink)' }}>{f1(stats.total)}</span>
                     <span style={{ font: '400 15px var(--font-sans)', color: 'var(--ink-mute)' }}>점</span>
@@ -205,7 +205,7 @@ export function StatsMainScreen() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ font: '500 14px var(--font-sans)', color: deltaCol }}>{deltaStr}</div>
-                  <div style={{ font: '400 11px var(--font-sans)', color: '#B4AB98', marginTop: 2 }}>{deltaSub}</div>
+                  <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>{deltaSub}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
@@ -220,8 +220,8 @@ export function StatsMainScreen() {
             </Card>
 
             {/* 한 줄 회고 */}
-            <div style={{ background: 'var(--olive)', borderRadius: 18, padding: '18px 20px', marginTop: 12 }}>
-              <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.1em', color: '#C7CCB2', textTransform: 'uppercase', marginBottom: 8 }}>{RANGE_LABEL[range]}의 회고</div>
+            <div style={{ background: 'var(--olive)', borderRadius: "var(--r-card)", padding: '18px 20px', marginTop: 12 }}>
+              <div style={{ font: '700 12px var(--font-sans)', color: 'rgba(255,255,255,0.8)', marginBottom: 8 }}>{RANGE_LABEL[range]}의 회고</div>
               <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine({ range, clayPct: stats.clayPct, deltaPct: stats.deltaPct, hasData: stats.hasData })}</div>
             </div>
 
@@ -229,11 +229,11 @@ export function StatsMainScreen() {
             <SectionLabel>노력의 흐름</SectionLabel>
             <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ font: '400 12px var(--font-sans)', color: '#8B8270' }}>{flowSub}</span>
+                <span style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>{flowSub}</span>
                 {flow.showMa && (
-                  <div style={{ display: 'flex', background: '#F0EADE', borderRadius: 9, padding: 3, gap: 2 }}>
+                  <div style={{ display: 'flex', background: 'var(--card-2)', borderRadius: 9, padding: 3, gap: 2 }}>
                     {([7, 30] as const).map((w) => (
-                      <button key={w} onClick={() => setMaWin(w)} style={{ border: 'none', borderRadius: 7, padding: '5px 10px', font: '500 11px var(--font-sans)', cursor: 'pointer', background: maWin === w ? 'var(--ink)' : 'transparent', color: maWin === w ? 'var(--card)' : '#8B8270' }}>{w}일 평균</button>
+                      <button key={w} onClick={() => setMaWin(w)} style={{ border: 'none', borderRadius: 7, padding: '5px 10px', font: '500 11px var(--font-sans)', cursor: 'pointer', background: maWin === w ? 'var(--ink)' : 'transparent', color: maWin === w ? 'var(--card)' : 'var(--ink-soft)' }}>{w}일 평균</button>
                     ))}
                   </div>
                 )}
@@ -260,7 +260,7 @@ export function StatsMainScreen() {
               </div>
               <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
                 {flow.bars.map((b, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', font: '400 9px var(--font-sans)', color: '#B4AB98', whiteSpace: 'nowrap', overflow: 'hidden' }}>{b.label}</div>
+                  <div key={i} style={{ flex: 1, textAlign: 'center', font: '400 9px var(--font-sans)', color: 'var(--ink-mute)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{b.label}</div>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 14, marginTop: 12, alignItems: 'center' }}>
@@ -271,12 +271,12 @@ export function StatsMainScreen() {
                 </span>
               </div>
               {detail && (
-                <div style={{ marginTop: 14, background: 'var(--card-2)', borderRadius: 12, padding: '13px 15px', animation: 'slideIn .3s ease' }}>
+                <div style={{ marginTop: 14, background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: '13px 15px', animation: 'slideIn .3s ease' }}>
                   <div style={{ font: '500 13px var(--font-sans)', color: 'var(--ink)', marginBottom: 4 }}>{detail.label || `#${selBar! + 1}`}</div>
-                  <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270' }}>{detail.body}</div>
+                  <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)' }}>{detail.body}</div>
                 </div>
               )}
-              <div style={{ font: '400 11px var(--font-sans)', color: '#B4AB98', marginTop: 10, textAlign: 'center' }}>막대를 탭하면 자세한 요약이 열려요</div>
+              <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 10, textAlign: 'center' }}>막대를 탭하면 자세한 요약이 열려요</div>
             </Card>
 
             {/* 즐겁게 vs 버텨냄 */}
@@ -285,7 +285,7 @@ export function StatsMainScreen() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                 <div style={{ position: 'relative', width: 108, height: 108, flex: 'none' }}>
                   <svg width={108} height={108} viewBox="0 0 108 108">
-                    <circle cx={54} cy={54} r={46} fill="none" stroke="#ECE4D4" strokeWidth={14} />
+                    <circle cx={54} cy={54} r={46} fill="none" stroke="var(--card-2)" strokeWidth={14} />
                     <circle cx={54} cy={54} r={46} fill="none" stroke="var(--olive)" strokeWidth={14} strokeDasharray={`${joyLen} 999`} transform="rotate(-90 54 54)" />
                     <circle cx={54} cy={54} r={46} fill="none" stroke="var(--clay)" strokeWidth={14} strokeDasharray={`${clayLen} 999`} strokeDashoffset={-joyLen} transform="rotate(-90 54 54)" />
                   </svg>
@@ -313,7 +313,7 @@ export function StatsMainScreen() {
                       <span style={{ color: c.color, fontWeight: 500 }}>{c.name}</span>
                       <span style={{ color: 'var(--ink-mute)' }}>{f1(c.effort)}점 · {Math.round((c.effort / ctot) * 100)}%</span>
                     </div>
-                    <div style={{ height: 8, borderRadius: 99, background: '#F0EADE', overflow: 'hidden' }}>
+                    <div style={{ height: 8, borderRadius: 99, background: 'var(--card-2)', overflow: 'hidden' }}>
                       <div style={{ width: `${((c.effort / cmax) * 100).toFixed(1)}%`, height: '100%', background: c.color, borderRadius: 99, transition: 'width .5s' }} />
                     </div>
                   </div>
@@ -337,14 +337,14 @@ export function StatsMainScreen() {
 
 function MiniStat({ value, label, color }: { value: string; label: string; color?: string }) {
   return (
-    <div style={{ flex: 1, background: 'var(--card-2)', borderRadius: 13, padding: 12 }}>
+    <div style={{ flex: 1, background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: 12 }}>
       <div style={{ font: '500 18px var(--font-serif)', color: color ?? 'var(--ink)' }}>{value}</div>
       <div style={{ font: '400 10.5px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>{label}</div>
     </div>
   );
 }
 function Chip({ children }: { children: React.ReactNode }) {
-  return <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#F0EADE', borderRadius: 99, padding: '7px 12px', font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>{children}</span>;
+  return <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--card-2)', borderRadius: 99, padding: '7px 12px', font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>{children}</span>;
 }
 function LegendDot({ color, label }: { color: string; label: string }) {
   return <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '400 11.5px var(--font-sans)', color: 'var(--ink-soft)' }}><span style={{ width: 9, height: 9, borderRadius: 3, background: color }} />{label}</span>;
@@ -360,9 +360,9 @@ function RatioRow({ color, label, pct }: { color: string; label: string; pct: nu
 }
 function EnterCard({ onClick, big, sub }: { onClick: () => void; big: string; sub: string }) {
   return (
-    <button onClick={onClick} style={{ flex: 1, background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 18, padding: '18px 14px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 4px 16px rgba(90,70,35,.05)' }}>
+    <button onClick={onClick} style={{ flex: 1, background: 'var(--card)', border: '1px solid var(--line)', borderRadius: "var(--r-card)", padding: '18px 14px', textAlign: 'left', cursor: 'pointer', boxShadow: 'var(--shadow-raised)' }}>
       <div style={{ font: '500 26px var(--font-serif)', color: 'var(--ink)' }}>{big}</div>
-      <div style={{ font: '400 12px var(--font-sans)', color: '#8B8270', marginTop: 4 }}>{sub}</div>
+      <div style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-soft)', marginTop: 4 }}>{sub}</div>
     </button>
   );
 }
@@ -373,11 +373,11 @@ const overlayInput: React.CSSProperties = {
 };
 
 const periodNavBtn: React.CSSProperties = {
-  width: 40, height: 40, flex: 'none', borderRadius: 11, border: '1px solid #E4DCCB',
+  width: 40, height: 40, flex: 'none', borderRadius: "var(--r-card-sm)", border: '1px solid var(--line)',
   background: 'var(--card)', color: 'var(--ink-soft)', fontSize: 18, cursor: 'pointer',
 };
 
 const linkBtn: React.CSSProperties = {
-  width: '100%', marginTop: 14, height: 42, borderRadius: 12, border: '1px solid #E4DCCB',
+  width: '100%', marginTop: 14, height: 42, borderRadius: "var(--r-card-sm)", border: '1px solid var(--line)',
   background: 'var(--card)', color: 'var(--ink-soft)', font: '500 13px var(--font-sans)', cursor: 'pointer',
 };

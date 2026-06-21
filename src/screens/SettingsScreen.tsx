@@ -49,19 +49,19 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
             <span style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)' }}>저항 계수</span>
             <span style={{ font: '500 24px var(--font-serif)', color: 'var(--clay)' }}>{coef.toFixed(2)}</span>
           </div>
-          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: '#8B8270', margin: '6px 0 14px' }}>
+          <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)', margin: '6px 0 14px' }}>
             저항도가 노력 점수를 얼마나 키울지 정해요. 클수록 ‘버텨낸 노력’을 더 높게 칩니다.
           </div>
           <input type="range" className="res" min={0.1} max={0.5} step={0.05} value={coef} onChange={(e) => updateSettings({ resistanceCoef: Number(e.target.value) })} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 10.5px var(--font-sans)', color: '#B4AB98', marginTop: 5 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', font: '400 10.5px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 5 }}>
             <span>0.10 · 완만</span><span>0.50 · 가파름</span>
           </div>
-          <div style={{ background: 'var(--card-2)', borderRadius: 12, padding: '13px 14px', marginTop: 16 }}>
+          <div style={{ background: 'var(--card-2)', borderRadius: "var(--r-card-sm)", padding: '13px 14px', marginTop: 16 }}>
             <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginBottom: 10 }}>투입 1시간 기준 — 저항도별 노력 점수</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <ExRow label="저항 0" w={exW(0)} val={ex(0).toFixed(2)} barColor="#6F7252" />
-              <ExRow label="저항 3" w={exW(3)} val={ex(3).toFixed(2)} barColor="#9A7F52" />
-              <ExRow label="저항 5" w={exW(5)} val={ex(5).toFixed(2)} barColor="#C07B53" />
+              <ExRow label="저항 0" w={exW(0)} val={ex(0).toFixed(2)} barColor="var(--olive)" />
+              <ExRow label="저항 3" w={exW(3)} val={ex(3).toFixed(2)} barColor="var(--clay)" />
+              <ExRow label="저항 5" w={exW(5)} val={ex(5).toFixed(2)} barColor="var(--clay)" />
             </div>
           </div>
         </Card>
@@ -71,14 +71,14 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
         <Card style={{ padding: 8 }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {categories.map((c) => (
-              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderBottom: '1px solid #F1EADC' }}>
+              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderBottom: '1px solid var(--line-2)' }}>
                 <span style={{ width: 12, height: 12, borderRadius: 4, background: c.color, flex: 'none' }} />
                 <span style={{ flex: 1, font: '500 15px var(--font-sans)', color: 'var(--ink)' }}>{c.name}</span>
-                <button onClick={() => removeCategory(c.id)} aria-label="삭제" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid #EFE7D7', background: 'var(--card)', color: '#C3B9A4', fontSize: 16, cursor: 'pointer', flex: 'none' }}>×</button>
+                <button onClick={() => removeCategory(c.id)} aria-label="삭제" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-mute)', fontSize: 16, cursor: 'pointer', flex: 'none' }}>×</button>
               </div>
             ))}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12 }}>
-              <span style={{ width: 12, height: 12, borderRadius: 4, border: '1.5px dashed #CFC4B0', flex: 'none' }} />
+              <span style={{ width: 12, height: 12, borderRadius: 4, border: '1.5px dashed var(--ink-mute)', flex: 'none' }} />
               <input
                 value={newCat}
                 onChange={(e) => setNewCat(e.target.value)}
@@ -95,7 +95,7 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
         {/* 알림 */}
         <SectionLabel>알림</SectionLabel>
         <Card style={{ padding: '6px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid #F1EADC' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid var(--line-2)' }}>
             <div>
               <div style={{ font: '500 15px var(--font-sans)', color: 'var(--ink)' }}>입력 리마인더</div>
               <div style={{ font: '400 12px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>매일 기록을 잊지 않게</div>
@@ -104,7 +104,7 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', opacity: settings.reminderOn ? 1 : 0.45, transition: 'opacity .25s' }}>
             <div style={{ font: '500 15px var(--font-sans)', color: 'var(--ink)' }}>알림 시간</div>
-            <input type="time" value={settings.reminderTime} onChange={(e) => updateSettings({ reminderTime: e.target.value })} disabled={!settings.reminderOn} style={{ font: '500 16px var(--font-serif)', color: 'var(--ink)', border: '1px solid #E4DCCB', background: 'var(--surface)', borderRadius: 11, padding: '8px 12px', outline: 'none' }} />
+            <input type="time" value={settings.reminderTime} onChange={(e) => updateSettings({ reminderTime: e.target.value })} disabled={!settings.reminderOn} style={{ font: '500 16px var(--font-serif)', color: 'var(--ink)', border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: "var(--r-card-sm)", padding: '8px 12px', outline: 'none' }} />
           </div>
           <div style={{ font: '400 11px/1.6 var(--font-sans)', color: 'var(--ink-mute)', padding: '0 0 12px' }}>
             ※ 브라우저·기기 정책에 따라 백그라운드 알림은 동작하지 않을 수 있어요. 설정값은 항상 저장됩니다.
@@ -142,8 +142,8 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
 function ExRow({ label, w, val, barColor }: { label: string; w: string; val: string; barColor: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{ font: '400 11px var(--font-sans)', color: '#8B8270', width: 48 }}>{label}</span>
-      <div style={{ flex: 1, height: 8, borderRadius: 99, background: '#E6DECB', overflow: 'hidden' }}>
+      <span style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-soft)', width: 48 }}>{label}</span>
+      <div style={{ flex: 1, height: 8, borderRadius: 99, background: 'var(--card-2)', overflow: 'hidden' }}>
         <div style={{ width: `${w}%`, height: '100%', background: barColor, borderRadius: 99, transition: 'width .4s' }} />
       </div>
       <span style={{ font: '500 13px var(--font-serif)', color: 'var(--ink)', width: 34, textAlign: 'right' }}>{val}</span>
@@ -153,7 +153,7 @@ function ExRow({ label, w, val, barColor }: { label: string; w: string; val: str
 
 function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} aria-pressed={on} style={{ width: 46, height: 27, borderRadius: 99, border: 'none', background: on ? 'var(--olive)' : '#D8D3BD', position: 'relative', cursor: 'pointer', transition: 'background .25s', flex: 'none' }}>
+    <button onClick={onClick} aria-pressed={on} style={{ width: 46, height: 27, borderRadius: 99, border: 'none', background: on ? 'var(--olive)' : 'var(--border-bold)', position: 'relative', cursor: 'pointer', transition: 'background .25s', flex: 'none' }}>
       <span style={{ position: 'absolute', top: 2.5, left: on ? 21 : 2, width: 22, height: 22, borderRadius: '50%', background: 'var(--card)', boxShadow: '0 1px 3px rgba(60,40,20,.3)', transition: 'left .25s' }} />
     </button>
   );

@@ -17,10 +17,10 @@ export function GuideModal({ open, onClose }: { open: boolean; onClose: () => vo
       {/* 헤더 */}
       <div style={{ flex: 'none', padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--line)' }}>
         <div>
-          <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.18em', color: 'var(--clay-accent)', textTransform: 'uppercase' }}>GUIDE</div>
-          <div style={{ font: '600 22px var(--font-serif)', color: 'var(--ink)', marginTop: 4 }}>노력 기록 사용 안내</div>
+          <div style={{ font: '700 22px var(--font-sans)', letterSpacing: '-0.01em', color: 'var(--ink)' }}>노력 기록 사용 안내</div>
+          <div style={{ font: '400 13px var(--font-sans)', color: 'var(--ink-soft)', marginTop: 2 }}>처음이라면 여기부터</div>
         </div>
-        <button onClick={onClose} aria-label="닫기" style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #E4DCCB', background: 'var(--card)', color: 'var(--ink-soft)', fontSize: 18, cursor: 'pointer', flex: 'none' }}>×</button>
+        <button onClick={onClose} aria-label="닫기" style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-soft)', fontSize: 18, cursor: 'pointer', flex: 'none' }}>×</button>
       </div>
 
       {/* 본문 */}
@@ -94,7 +94,7 @@ export function GuideModal({ open, onClose }: { open: boolean; onClose: () => vo
 
       {/* 푸터 */}
       <div style={{ flex: 'none', padding: '12px 20px calc(env(safe-area-inset-bottom,0px) + 16px)', borderTop: '1px solid var(--line)' }}>
-        <button onClick={onClose} style={{ width: '100%', height: 52, borderRadius: 15, border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 16px var(--font-sans)', cursor: 'pointer' }}>
+        <button onClick={onClose} style={{ width: '100%', height: 52, borderRadius: 10, border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 16px var(--font-sans)', cursor: 'pointer' }}>
           시작하기
         </button>
       </div>
@@ -103,7 +103,7 @@ export function GuideModal({ open, onClose }: { open: boolean; onClose: () => vo
 }
 
 function H({ children }: { children: ReactNode }) {
-  return <div style={{ font: '600 12px var(--font-sans)', letterSpacing: '.04em', color: 'var(--ink-mute)', margin: '22px 2px 10px' }}>{children}</div>;
+  return <div style={{ font: '700 15px var(--font-sans)', color: 'var(--ink)', margin: '24px 2px 10px' }}>{children}</div>;
 }
 function Sub({ children }: { children: ReactNode }) {
   return <div style={{ font: '600 14px var(--font-sans)', color: 'var(--ink)', margin: '14px 2px 6px' }}>{children}</div>;
