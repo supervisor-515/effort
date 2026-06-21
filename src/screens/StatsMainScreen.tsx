@@ -58,6 +58,22 @@ export function StatsMainScreen() {
     setAnchor(d);
   };
 
+  const pickMonth = (value: string) => {
+    if (!value) return; // 'YYYY-MM'
+    const [y, m] = value.split('-').map(Number);
+    setSelBar(null);
+    let d = new Date(y, m - 1, 1);
+    if (d > today) d = today;
+    setAnchor(d);
+  };
+
+  const pickYear = (y: number) => {
+    setSelBar(null);
+    let d = new Date(y, 0, 1);
+    if (d > today) d = today;
+    setAnchor(d);
+  };
+
   const changeRange = (r: RangeKey) => {
     setRange(r);
     setSelBar(null);
@@ -67,6 +83,14 @@ export function StatsMainScreen() {
     if (entries.length === 0) return undefined;
     return entries.reduce((min, e) => (e.date < min ? e.date : min), entries[0].date);
   }, [entries]);
+
+  // 연 선택용 연도 목록(최신 → 과거)
+  const years = useMemo(() => {
+    const start = earliestIso ? Number(earliestIso.slice(0, 4)) : today.getFullYear();
+    const out: number[] = [];
+    for (let y = today.getFullYear(); y >= start; y--) out.push(y);
+    return out;
+  }, [earliestIso, today]);
 
   const stats = useMemo(() => periodStats(entries, coef, anchor, range), [entries, coef, range, anchor]);
   const flow = useMemo(() => buildFlow(entries, coef, anchor, range, maWin), [entries, coef, range, maWin, anchor]);
@@ -126,15 +150,38 @@ export function StatsMainScreen() {
                 {RANGE_TITLE[range](anchor)}
                 <span style={{ color: 'var(--ink-mute)', fontSize: 11 }}>▾</span>
               </button>
-              <input
-                type="date"
-                value={toISODate(anchor)}
-                min={earliestIso}
-                max={toISODate(today)}
-                onChange={(e) => pickDate(e.target.value)}
-                aria-label="날짜 선택"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none' }}
-              />
+              {(range === 'day' || range === 'week') && (
+                <input
+                  type="date"
+                  value={toISODate(anchor)}
+                  min={earliestIso}
+                  max={toISODate(today)}
+                  onChange={(e) => pickDate(e.target.value)}
+                  aria-label="날짜 선택"
+                  style={overlayInput}
+                />
+              )}
+              {range === 'month' && (
+                <input
+                  type="month"
+                  value={`${anchor.getFullYear()}-${String(anchor.getMonth() + 1).padStart(2, '0')}`}
+                  min={earliestIso?.slice(0, 7)}
+                  max={`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`}
+                  onChange={(e) => pickMonth(e.target.value)}
+                  aria-label="월 선택"
+                  style={overlayInput}
+                />
+              )}
+              {range === 'year' && (
+                <select
+                  value={anchor.getFullYear()}
+                  onChange={(e) => pickYear(Number(e.target.value))}
+                  aria-label="연도 선택"
+                  style={overlayInput}
+                >
+                  {years.map((y) => <option key={y} value={y}>{y}년</option>)}
+                </select>
+              )}
             </div>
             <button onClick={() => shift(1)} disabled={atLatest} aria-label="다음 기간" style={{ ...periodNavBtn, opacity: atLatest ? 0.28 : 1, cursor: atLatest ? 'default' : 'pointer' }}>›</button>
           </div>
@@ -319,6 +366,11 @@ function EnterCard({ onClick, big, sub }: { onClick: () => void; big: string; su
     </button>
   );
 }
+
+const overlayInput: React.CSSProperties = {
+  position: 'absolute', inset: 0, width: '100%', height: '100%',
+  opacity: 0, cursor: 'pointer', border: 'none', background: 'transparent',
+};
 
 const periodNavBtn: React.CSSProperties = {
   width: 40, height: 40, flex: 'none', borderRadius: 11, border: '1px solid #E4DCCB',
