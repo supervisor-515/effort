@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../store';
 import { Card, ScreenHeader, SectionLabel } from '../components/ui';
 
-export function SettingsScreen() {
+export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
   const {
     categories, settings, demoMode,
     addCategory, removeCategory, updateSettings, setDemoMode,
@@ -26,8 +26,24 @@ export function SettingsScreen() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <ScreenHeader title="설정" sub="기록의 규칙을 내게 맞춰요" />
       <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
+        {/* 사용 안내 */}
+        <SectionLabel style={{ margin: '6px 6px 12px' }}>도움말</SectionLabel>
+        <Card style={{ padding: 0 }}>
+          <button
+            onClick={onOpenGuide}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <span style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--card-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', font: '600 16px var(--font-serif)', color: 'var(--olive)' }}>?</span>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: 'block', font: '500 15px var(--font-sans)', color: 'var(--ink)' }}>사용 안내</span>
+              <span style={{ display: 'block', font: '400 12px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 2 }}>앱 사용법을 처음부터 다시 보기</span>
+            </span>
+            <span style={{ color: 'var(--ink-mute)', font: '400 18px var(--font-sans)', flex: 'none' }}>›</span>
+          </button>
+        </Card>
+
         {/* 저항 계수 */}
-        <SectionLabel style={{ margin: '6px 6px 12px' }}>노력 계산</SectionLabel>
+        <SectionLabel>노력 계산</SectionLabel>
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <span style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)' }}>저항 계수</span>
