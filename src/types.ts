@@ -9,13 +9,15 @@ export type Entry = {
   units: number; // 15분 단위 개수 (hours = units * 0.25)
   resistance: Resistance;
   categoryId: string;
-  hour?: number; // 0~23, 시간대 히트맵용(기록 시각 기준, 베스트 에포트)
+  band?: number; // 0~4 시간대(새벽/아침/점심/오후/저녁), 미지정 시 hour로 추정
+  hour?: number; // 0~23, 구버전/데모 호환용
 };
+
+export type ThemePref = 'auto' | 'light' | 'dark';
 
 export type Settings = {
   resistanceCoef: number; // 기본 0.3
-  reminderOn: boolean;
-  reminderTime: string; // 'HH:mm'
+  theme: ThemePref; // 화면 테마
 };
 
 export type RangeKey = 'day' | 'week' | 'month' | 'year';

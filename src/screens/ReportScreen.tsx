@@ -4,9 +4,8 @@ import { f1, fmtHM, parseISODate, shortDateLabel } from '../lib/format';
 import { aggregateByDay, isClay } from '../lib/score';
 import { categoryStats, density, stabilityIndex } from '../lib/stats';
 import { periodFilter } from '../lib/period';
+import { useStatsView } from '../statsView';
 import { BackHeader, EmptyState } from '../components/ui';
-
-const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
 function classifyStyle(clayPct: number, dens: number, stability: number): { style: string; note: string } {
   if (clayPct >= 45) return { style: '고저항 돌파형', note: `버텨낸 비율이 ${clayPct}%로 높았어요. 저항이 큰 일을 여러 번 정면으로 넘긴 달이에요.` };
@@ -18,7 +17,7 @@ function classifyStyle(clayPct: number, dens: number, stability: number): { styl
 export function ReportScreen() {
   const { entries, categories, settings } = useStore();
   const coef = settings.resistanceCoef;
-  const today = startOfToday();
+  const { anchor: today } = useStatsView();
   const [shareMsg, setShareMsg] = useState<string | null>(null);
 
   const r = useMemo(() => {

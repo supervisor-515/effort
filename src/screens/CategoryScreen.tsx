@@ -1,26 +1,30 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
+import { useStatsView } from '../statsView';
 import { f1, fmtHM } from '../lib/format';
 import { categoryStats } from '../lib/stats';
+import { periodFilter, RANGE_TITLE } from '../lib/period';
 import { categoryInsight } from '../lib/insights';
 import { BackHeader, Card, EmptyState, Lozenge, SectionLabel } from '../components/ui';
 
 export function CategoryScreen() {
   const { entries, categories, settings } = useStore();
   const coef = settings.resistanceCoef;
+  const { range, anchor } = useStatsView();
+  const periodLabel = RANGE_TITLE[range](anchor);
 
   const cats = useMemo(
-    () => categoryStats(entries, categories, coef).filter((c) => c.effort > 0),
-    [entries, categories, coef],
+    () => categoryStats(entries, categories, coef, periodFilter(range, anchor)).filter((c) => c.effort > 0),
+    [entries, categories, coef, range, anchor],
   );
   const [selId, setSelId] = useState<string | null>(null);
 
   if (cats.length === 0) {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <BackHeader title="카테고리 분석" sub="어디에 쌓고, 어디서 버텼나" />
+        <BackHeader title="카테고리 분석" sub={`${periodLabel} · 기록 없음`} />
         <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
-          <EmptyState title="카테고리 흐름은 아직이에요" body="항목을 기록하면 어디에 노력이 쌓이고 어디서 버텼는지 보여드릴게요." />
+          <EmptyState title="이 기간엔 기록이 없어요" body="통계 화면에서 기간을 옮기거나, 항목을 기록하면 여기에 카테고리 분석이 나타나요." />
         </div>
       </div>
     );
@@ -37,11 +41,11 @@ export function CategoryScreen() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <BackHeader title="카테고리 분석" sub="어디에 쌓고, 어디서 버텼나" />
+      <BackHeader title="카테고리 분석" sub={`${periodLabel} 기준`} />
       <div className="scr" style={{ flex: 1, padding: '0 18px 24px' }}>
         {/* 누적 노력량 */}
         <Card>
-          <div style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)', marginBottom: 16 }}>카테고리별 누적 노력량</div>
+          <div style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)', marginBottom: 16 }}>카테고리별 노력량</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {byEffort.map((c) => {
               const w = (c.effort / cMax) * 100;

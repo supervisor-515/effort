@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
 import { useStore } from '../store';
-import { f1, mix } from '../lib/format';
+import { useStatsView } from '../statsView';
+import { f1, mix, TIME_BANDS } from '../lib/format';
 import { aggregateByDay } from '../lib/score';
 import { daySeries, dowResistance, heatmap } from '../lib/stats';
 import { dowNote, heatNote, recoveryHeading, recoveryNote, resistanceTrendNote, sixMonthNote } from '../lib/insights';
 import { BackHeader, Card, EmptyState } from '../components/ui';
 
-const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const resColor = (v: number) => mix('#6F7252', '#C07B53', (v - 1) / 3.2);
 
 export function ResistanceScreen() {
   const { entries, settings } = useStore();
   const coef = settings.resistanceCoef;
-  const today = startOfToday();
+  const { anchor: today } = useStatsView();
 
   const data = useMemo(() => {
     const series70 = daySeries(entries, coef, today, 70);
@@ -151,7 +151,7 @@ export function ResistanceScreen() {
             <>
               <div style={{ display: 'flex', gap: 6, marginTop: 16 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 5, font: '400 10px var(--font-sans)', color: 'var(--ink-mute)', paddingTop: 18 }}>
-                  <span>새벽</span><span>오전</span><span>오후</span><span>저녁</span>
+                  {TIME_BANDS.map((b) => <span key={b}>{b}</span>)}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 5 }}>

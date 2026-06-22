@@ -1,9 +1,9 @@
-import { f1 } from './format';
+import { f1, TIME_BANDS } from './format';
 import { density as densityOf } from './stats';
 import type { CatStat } from './stats';
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const BANDS = ['새벽', '오전', '오후', '저녁'];
+const BANDS = TIME_BANDS;
 
 // ───────────── 저항 분석 ─────────────
 

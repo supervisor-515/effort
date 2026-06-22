@@ -12,7 +12,7 @@
   /* ── Text ── */
   --ink: #26231e;         /* 본문/제목 */
   --ink-soft: #5a5347;    /* 보조 메타 */
-  --ink-mute: #8a8273;    /* 플레이스홀더/힌트 */
+  --ink-mute: #7c7565;    /* 플레이스홀더/힌트 (대비 보강) */
 
   /* ── Brand: olive(즐겁게/적립) · clay(버텨냄/성장) ── */
   --olive: #6f7252;
@@ -38,6 +38,36 @@
   --font-serif: 'Fraunces', 'Noto Serif KR', Georgia, 'Times New Roman', serif;
   --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
     'Malgun Gothic', system-ui, sans-serif;
+}
+
+/* ── 다크 테마 (따뜻한 다크) ── */
+:root[data-theme='dark'] {
+  --bg: #15130d;
+  --surface: #1e1b14;
+  --card: #26221a;
+  --card-2: #2f2a20;
+  --sunken: #2f2a20;
+  --line: #3a3528;
+  --line-2: #322e23;
+  --border-bold: #4a4536;
+
+  --ink: #f2eee3;
+  --ink-soft: #c8c1b0;
+  --ink-mute: #9b9380;
+
+  --olive: #8a9b6b;
+  --olive-2: #9db07c;
+  --olive-text: #bccb91;
+  --olive-subtle: #2b3220;
+  --clay: #d08a5e;
+  --clay-accent: #e3a479;
+  --clay-subtle: #3a2a1e;
+  --neutral-subtle: #2f2a20;
+
+  --shadow-raised: 0 1px 1px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.55);
+  --shadow-overlay: 0 8px 14px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
 }
 
 * {

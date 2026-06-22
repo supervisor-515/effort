@@ -89,4 +89,26 @@ export function relDateLabel(offset: number): string {
   return `${offset}일 전`;
 }
 
+/** 러프한 시간대 5구간 */
+export const TIME_BANDS = ['새벽', '아침', '점심', '오후', '저녁'] as const;
+
+/** 0~23시 → 밴드(0 새벽 / 1 아침 / 2 점심 / 3 오후 / 4 저녁) */
+export function bandFromHour(hour: number): number {
+  if (hour < 6) return 0; // 0–5 새벽
+  if (hour < 11) return 1; // 6–10 아침
+  if (hour < 14) return 2; // 11–13 점심
+  if (hour < 18) return 3; // 14–17 오후
+  return 4; // 18–23 저녁
+}
+
+/** 현재 시각의 밴드 */
+export const currentBand = (): number => bandFromHour(new Date().getHours());
+
+/** 항목의 시간대 밴드(band 우선, 없으면 hour로 추정, 그것도 없으면 null) */
+export function entryBand(e: { band?: number; hour?: number }): number | null {
+  if (e.band != null) return e.band;
+  if (e.hour != null) return bandFromHour(e.hour);
+  return null;
+}
+
 export type { Resistance };

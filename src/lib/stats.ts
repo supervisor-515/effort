@@ -1,5 +1,5 @@
 import type { Category, Entry, RangeKey } from '../types';
-import { addDays, toISODate, parseISODate, f1, fmtHM } from './format';
+import { addDays, toISODate, parseISODate, f1, fmtHM, entryBand } from './format';
 import { aggregateByDay, entryEffort, entryHours, isClay, isJoy, type DayAgg } from './score';
 
 const emptyDay = (date: string): DayAgg => ({
@@ -206,13 +206,14 @@ export function dowResistance(entries: Entry[]): number[] {
   return sum.map((s, i) => (cnt[i] ? s / cnt[i] : 0));
 }
 
-/** 시간대(새벽/오전/오후/저녁) × 요일 평균 저항도. hour 없는 항목은 제외. */
+/** 시간대(새벽/아침/점심/오후/저녁) × 요일 평균 저항도. 밴드 정보 없는 항목은 제외. */
 export function heatmap(entries: Entry[]): { avg: number; has: boolean }[][] {
-  const sum = Array.from({ length: 4 }, () => [0, 0, 0, 0, 0, 0, 0]);
-  const cnt = Array.from({ length: 4 }, () => [0, 0, 0, 0, 0, 0, 0]);
+  const BANDS = 5;
+  const sum = Array.from({ length: BANDS }, () => [0, 0, 0, 0, 0, 0, 0]);
+  const cnt = Array.from({ length: BANDS }, () => [0, 0, 0, 0, 0, 0, 0]);
   for (const e of entries) {
-    if (e.hour == null) continue;
-    const band = Math.min(3, Math.floor(e.hour / 6));
+    const band = entryBand(e);
+    if (band == null) continue;
     const dow = parseISODate(e.date).getDay();
     sum[band][dow] += e.resistance;
     cnt[band][dow] += 1;

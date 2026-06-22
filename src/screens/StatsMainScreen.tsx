@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
+import { useStatsView } from '../statsView';
 import { navigate } from '../router';
 import { addDays, addMonths, f1, fmtHM, parseISODate, toISODate } from '../lib/format';
 import { buildFlow, categoryStats, periodStats } from '../lib/stats';
@@ -7,11 +8,6 @@ import { periodFilter, ratioNote, RANGE_LABEL, RANGE_TITLE, recapLine } from '..
 import { Card, EmptyState, ScreenHeader, SectionLabel } from '../components/ui';
 import type { RangeKey } from '../types';
 
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: 'day', label: '일' }, { key: 'week', label: '주' }, { key: 'month', label: '월' }, { key: 'year', label: '연' },
 ];
@@ -29,12 +25,10 @@ function atLatestPeriod(anchor: Date, today: Date, range: RangeKey): boolean {
 export function StatsMainScreen() {
   const { entries, categories, settings } = useStore();
   const coef = settings.resistanceCoef;
-  const today = useMemo(startOfToday, []);
+  const { today, range, anchor, setRange, setAnchor } = useStatsView();
 
-  const [range, setRange] = useState<RangeKey>('month');
   const [maWin, setMaWin] = useState<7 | 30>(7);
   const [selBar, setSelBar] = useState<number | null>(null);
-  const [anchor, setAnchor] = useState<Date>(() => startOfToday());
 
   const atLatest = atLatestPeriod(anchor, today, range);
 
@@ -282,24 +276,28 @@ export function StatsMainScreen() {
             {/* 즐겁게 vs 버텨냄 */}
             <SectionLabel>즐겁게 한 노력 vs 버텨낸 노력</SectionLabel>
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                <div style={{ position: 'relative', width: 108, height: 108, flex: 'none' }}>
-                  <svg width={108} height={108} viewBox="0 0 108 108">
-                    <circle cx={54} cy={54} r={46} fill="none" stroke="var(--card-2)" strokeWidth={14} />
-                    <circle cx={54} cy={54} r={46} fill="none" stroke="var(--olive)" strokeWidth={14} strokeDasharray={`${joyLen} 999`} transform="rotate(-90 54 54)" />
-                    <circle cx={54} cy={54} r={46} fill="none" stroke="var(--clay)" strokeWidth={14} strokeDasharray={`${clayLen} 999`} strokeDashoffset={-joyLen} transform="rotate(-90 54 54)" />
-                  </svg>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ font: '500 24px var(--font-serif)', color: 'var(--clay)' }}>{stats.clayPct}%</span>
-                    <span style={{ font: '400 10px var(--font-sans)', color: 'var(--ink-mute)' }}>버텨냄</span>
+              {stats.hasData ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+                  <div style={{ position: 'relative', width: 108, height: 108, flex: 'none' }}>
+                    <svg width={108} height={108} viewBox="0 0 108 108">
+                      <circle cx={54} cy={54} r={46} fill="none" stroke="var(--card-2)" strokeWidth={14} />
+                      <circle cx={54} cy={54} r={46} fill="none" stroke="var(--olive)" strokeWidth={14} strokeDasharray={`${joyLen} 999`} transform="rotate(-90 54 54)" />
+                      <circle cx={54} cy={54} r={46} fill="none" stroke="var(--clay)" strokeWidth={14} strokeDasharray={`${clayLen} 999`} strokeDashoffset={-joyLen} transform="rotate(-90 54 54)" />
+                    </svg>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ font: '500 24px var(--font-serif)', color: 'var(--clay)' }}>{stats.clayPct}%</span>
+                      <span style={{ font: '400 10px var(--font-sans)', color: 'var(--ink-mute)' }}>버텨냄</span>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <RatioRow color="var(--olive)" label="즐겁게 한 노력" pct={stats.joyPct} />
+                    <RatioRow color="var(--clay)" label="버텨낸 노력" pct={stats.clayPct} />
+                    <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '9px 11px', marginTop: 4 }}>{ratioNote(stats.clayPct)}</div>
                   </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <RatioRow color="var(--olive)" label="즐겁게 한 노력" pct={stats.joyPct} />
-                  <RatioRow color="var(--clay)" label="버텨낸 노력" pct={stats.clayPct} />
-                  <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '9px 11px', marginTop: 4 }}>{ratioNote(stats.clayPct)}</div>
-                </div>
-              </div>
+              ) : (
+                <div style={{ font: '400 13px/1.6 var(--font-sans)', color: 'var(--ink-mute)', textAlign: 'center', padding: '14px 0' }}>이 기간엔 기록이 없어요.</div>
+              )}
               <button onClick={() => navigate('#/stats/resistance')} style={linkBtn}>저항 분석 자세히 보기 ›</button>
             </Card>
 
