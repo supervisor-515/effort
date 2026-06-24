@@ -4,6 +4,7 @@ import { f1, fmtHM, parseISODate, shortDateLabel } from '../lib/format';
 import { aggregateByDay, isClay } from '../lib/score';
 import { categoryStats, density, stabilityIndex } from '../lib/stats';
 import { periodFilter } from '../lib/period';
+import { renderReportPng } from '../lib/reportCanvas';
 import { useStatsView } from '../statsView';
 import { BackHeader, EmptyState } from '../components/ui';
 
@@ -89,6 +90,34 @@ export function ReportScreen() {
   };
 
   const bestDay = `${shortDateLabel(parseISODate(r.best.date))} · ${f1(r.best.total)}점`;
+
+  const onSaveImage = async () => {
+    try {
+      const blob = await renderReportPng({
+        year: today.getFullYear(), monthLabel,
+        total: f1(r.total), hours: fmtHM(r.hours), avgRes: f1(r.avgRes),
+        clayPct: r.clayPct, stability: r.stability,
+        topCat: r.topCat?.name ?? '—', topClay: r.topClay?.name ?? '—', topJoy: r.topJoy?.name ?? '—',
+        bestDay, style: r.style, note: r.note,
+      });
+      const file = new File([blob], `노력리포트-${today.getFullYear()}-${monthLabel}.png`, { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: '노력 리포트' });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        setShareMsg('리포트 이미지를 저장했어요.');
+        setTimeout(() => setShareMsg(null), 2200);
+      }
+    } catch {
+      setShareMsg('이미지를 만들지 못했어요.');
+      setTimeout(() => setShareMsg(null), 2200);
+    }
+  };
   const clayCount = entries.filter(periodFilter('month', today)).filter(isClay).length;
 
   return (
@@ -141,9 +170,10 @@ export function ReportScreen() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <button onClick={onSave} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-soft)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>저장하기</button>
-          <button onClick={onShare} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>공유하기</button>
+          <button onClick={onSave} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-soft)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>텍스트 저장</button>
+          <button onClick={onShare} style={{ flex: 1, height: 48, borderRadius: "var(--r-card)", border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink-soft)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>공유하기</button>
         </div>
+        <button onClick={onSaveImage} style={{ width: '100%', height: 48, marginTop: 10, borderRadius: "var(--r-card)", border: 'none', background: 'var(--olive)', color: 'var(--card)', font: '600 14px var(--font-sans)', cursor: 'pointer' }}>이미지로 저장 / 공유</button>
         {shareMsg && <div style={{ textAlign: 'center', font: '400 12px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 12 }}>{shareMsg}</div>}
       </div>
     </div>

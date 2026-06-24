@@ -6,6 +6,7 @@ import { addDays, addMonths, f1, fmtHM, parseISODate, toISODate } from '../lib/f
 import { buildFlow, categoryStats, goalStats, periodStats, projection } from '../lib/stats';
 import { periodFilter, ratioNote, RANGE_LABEL, RANGE_TITLE, recapLine } from '../lib/period';
 import { goalNote, projectionNote } from '../lib/insights';
+import { buildFeed } from '../lib/feed';
 import { Card, EmptyState, ScreenHeader, SectionLabel } from '../components/ui';
 import type { RangeKey } from '../types';
 
@@ -30,6 +31,14 @@ export function StatsMainScreen() {
 
   const [maWin, setMaWin] = useState<7 | 30>(7);
   const [selBar, setSelBar] = useState<number | null>(null);
+  const [catFilter, setCatFilter] = useState<string | null>(null);
+
+  // 카테고리 필터가 걸리면 해당 카테고리 항목만으로 요약·흐름·도넛을 계산
+  const fentries = useMemo(
+    () => (catFilter ? entries.filter((e) => e.categoryId === catFilter) : entries),
+    [entries, catFilter],
+  );
+  const filterName = catFilter ? categories.find((c) => c.id === catFilter)?.name : null;
 
   const atLatest = atLatestPeriod(anchor, today, range);
 
@@ -87,19 +96,24 @@ export function StatsMainScreen() {
     return out;
   }, [earliestIso, today]);
 
-  const stats = useMemo(() => periodStats(entries, coef, anchor, range), [entries, coef, range, anchor]);
-  const flow = useMemo(() => buildFlow(entries, coef, anchor, range, maWin), [entries, coef, range, maWin, anchor]);
+  const stats = useMemo(() => periodStats(fentries, coef, anchor, range), [fentries, coef, range, anchor]);
+  const flow = useMemo(() => buildFlow(fentries, coef, anchor, range, maWin), [fentries, coef, range, maWin, anchor]);
+  // 목표·예측은 '하루 전체' 개념이라 카테고리 필터가 없을 때만 의미가 있음
   const goal = useMemo(
-    () => (range === 'day' ? null : goalStats(entries, coef, settings.dailyGoal, periodFilter(range, anchor))),
-    [entries, coef, settings.dailyGoal, range, anchor],
+    () => (range === 'day' || catFilter ? null : goalStats(entries, coef, settings.dailyGoal, periodFilter(range, anchor))),
+    [entries, coef, settings.dailyGoal, range, anchor, catFilter],
   );
   const proj = useMemo(
-    () => ((range === 'month' || range === 'year') && atLatest ? projection(entries, coef, today, range) : null),
-    [entries, coef, range, atLatest, today],
+    () => ((range === 'month' || range === 'year') && atLatest && !catFilter ? projection(entries, coef, today, range) : null),
+    [entries, coef, range, atLatest, today, catFilter],
   );
   const cats = useMemo(
     () => categoryStats(entries, categories, coef, periodFilter(range, anchor)).filter((c) => c.effort > 0),
     [entries, categories, coef, range, anchor],
+  );
+  const feed = useMemo(
+    () => buildFeed(entries, categories, coef, today, settings.dailyGoal),
+    [entries, categories, coef, today, settings.dailyGoal],
   );
 
   const hasAny = entries.length > 0;
@@ -190,6 +204,17 @@ export function StatsMainScreen() {
           </div>
         )}
 
+        {/* 카테고리 필터 */}
+        {hasAny && cats.length > 1 && (
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginTop: 10, paddingBottom: 2 }} className="scr">
+            <FilterChip active={!catFilter} onClick={() => { setCatFilter(null); setSelBar(null); }} label="전체" />
+            {byEffort.map((c) => (
+              <FilterChip key={c.id} active={catFilter === c.id} color={c.color}
+                onClick={() => { setCatFilter(catFilter === c.id ? null : c.id); setSelBar(null); }} label={c.name} />
+            ))}
+          </div>
+        )}
+
         {!hasAny ? (
           <div style={{ marginTop: 16 }}>
             <EmptyState title="아직 기록이 쌓이는 중이에요" body="입력 탭에서 오늘 한 일을 적으면, 이곳에 흐름과 회고가 차곡차곡 그려져요. 설정에서 데모 데이터를 켜면 미리 둘러볼 수 있어요." />
@@ -217,8 +242,14 @@ export function StatsMainScreen() {
                 <MiniStat value={`${stats.clayPct}%`} label="버텨낸 비율" color="var(--clay)" />
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-                <Chip>가장 많이 쌓인 <b style={{ color: 'var(--olive)', fontWeight: 600 }}>{topCat}</b></Chip>
-                <Chip>가장 많이 버틴 <b style={{ color: 'var(--clay)', fontWeight: 600 }}>{topClayCat}</b></Chip>
+                {filterName ? (
+                  <Chip>‘<b style={{ color: 'var(--ink)', fontWeight: 600 }}>{filterName}</b>’만 보는 중</Chip>
+                ) : (
+                  <>
+                    <Chip>가장 많이 쌓인 <b style={{ color: 'var(--olive)', fontWeight: 600 }}>{topCat}</b></Chip>
+                    <Chip>가장 많이 버틴 <b style={{ color: 'var(--clay)', fontWeight: 600 }}>{topClayCat}</b></Chip>
+                  </>
+                )}
                 {goal && goal.activeDays > 0 && (
                   <Chip>목표 달성 <b style={{ color: 'var(--olive)', fontWeight: 600 }}>{goal.metDays}일</b> / {goal.activeDays}일</Chip>
                 )}
@@ -240,6 +271,24 @@ export function StatsMainScreen() {
               <div style={{ font: '700 12px var(--font-sans)', color: 'rgba(255,255,255,0.8)', marginBottom: 8 }}>{RANGE_LABEL[range]}의 회고</div>
               <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine({ range, clayPct: stats.clayPct, deltaPct: stats.deltaPct, hasData: stats.hasData })}</div>
             </div>
+
+            {/* 자동 인사이트 피드 (필터 없을 때, 전체 흐름 기준) */}
+            {!catFilter && feed.length > 0 && (
+              <>
+                <SectionLabel>요즘 흐름</SectionLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {feed.map((f, i) => {
+                    const c = f.tone === 'clay' ? 'var(--clay)' : f.tone === 'olive' ? 'var(--olive)' : 'var(--ink-mute)';
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-card-sm)', padding: '12px 14px', boxShadow: 'var(--shadow-raised)' }}>
+                        <span style={{ flex: 'none', marginTop: 5, width: 7, height: 7, borderRadius: '50%', background: c }} />
+                        <span style={{ font: '400 13px/1.5 var(--font-sans)', color: 'var(--ink-soft)' }}>{f.text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             {/* 노력 흐름 */}
             <SectionLabel>노력의 흐름</SectionLabel>
@@ -325,7 +374,9 @@ export function StatsMainScreen() {
               <button onClick={() => navigate('#/stats/resistance')} style={linkBtn}>저항 분석 자세히 보기 ›</button>
             </Card>
 
-            {/* 카테고리 프리뷰 */}
+            {/* 카테고리 프리뷰 (필터 없을 때만) */}
+            {!catFilter && (
+            <>
             <SectionLabel>어디에 노력이 쌓였나</SectionLabel>
             <Card>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
@@ -343,6 +394,8 @@ export function StatsMainScreen() {
               </div>
               <button onClick={() => navigate('#/stats/category')} style={linkBtn}>카테고리 분석 자세히 보기 ›</button>
             </Card>
+            </>
+            )}
 
             {/* 리포트/아카이브/달력 진입 */}
             <SectionLabel>돌아보기</SectionLabel>
@@ -370,6 +423,15 @@ function MiniStat({ value, label, color }: { value: string; label: string; color
 }
 function Chip({ children }: { children: React.ReactNode }) {
   return <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--card-2)', borderRadius: 99, padding: '7px 12px', font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>{children}</span>;
+}
+function FilterChip({ active, onClick, label, color }: { active: boolean; onClick: () => void; label: string; color?: string }) {
+  return (
+    <button onClick={onClick} aria-pressed={active}
+      style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 6, borderRadius: 99, padding: '7px 13px', cursor: 'pointer', font: '500 12.5px var(--font-sans)', whiteSpace: 'nowrap', transition: 'all .15s', background: active ? 'var(--ink)' : 'var(--card)', color: active ? 'var(--card)' : 'var(--ink-soft)', border: `1px solid ${active ? 'var(--ink)' : 'var(--line)'}` }}>
+      {color && <span style={{ width: 8, height: 8, borderRadius: 3, background: color, opacity: active ? 1 : 0.7 }} />}
+      {label}
+    </button>
+  );
 }
 function LegendDot({ color, label }: { color: string; label: string }) {
   return <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '400 11.5px var(--font-sans)', color: 'var(--ink-soft)' }}><span style={{ width: 9, height: 9, borderRadius: 3, background: color }} />{label}</span>;

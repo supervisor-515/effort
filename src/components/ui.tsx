@@ -65,6 +65,15 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
   );
 }
 
+/** 옅은 배경 위 회고/해설 한 줄(앱 곳곳의 tinted note 박스 공통화) */
+export function SoftNote({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '10px 12px', ...style }}>
+      {children}
+    </div>
+  );
+}
+
 export function StatTriple({ items }: { items: { value: ReactNode; label: string; color?: string }[] }) {
   return (
     <div style={{ display: 'flex', gap: 8 }}>

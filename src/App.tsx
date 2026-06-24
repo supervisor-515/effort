@@ -47,7 +47,7 @@ export function App() {
   };
 
   let screen;
-  if (route.tab === 'input') screen = <InputScreen />;
+  if (route.tab === 'input') screen = <InputScreen initialDate={route.date} />;
   else if (route.tab === 'settings') screen = <SettingsScreen onOpenGuide={() => setGuideOpen(true)} />;
   else {
     switch (route.sub) {

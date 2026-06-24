@@ -1,14 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Category, Entry, Resistance, Settings } from './types';
-import { currentBand } from './lib/format';
+import { currentBand, toISODate } from './lib/format';
 import { CATEGORY_PALETTE, DEFAULT_CATEGORIES, generateDemoEntries } from './lib/demo';
 
 const K = {
   real: 'effort.real.entries',
   demo: 'effort.demo.entries',
+  demoDay: 'effort.demo.day', // 데모를 생성한 날짜(YYYY-MM-DD) — 날짜가 바뀌면 재생성
   cats: 'effort.categories',
   settings: 'effort.settings',
   demoMode: 'effort.demoMode',
+};
+
+const todayISO = (): string => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return toISODate(d);
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -102,9 +109,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => save(K.settings, settings), [settings]);
   useEffect(() => save(K.demoMode, demoMode), [demoMode]);
 
+  // 데모 데이터가 비어 있거나 '생성한 날'이 오늘이 아니면 오늘 기준으로 다시 만든다.
+  const ensureFreshDemo = useCallback(() => {
+    const day = todayISO();
+    setDemoEntries((prev) => {
+      if (prev.length && load<string>(K.demoDay, '') === day) return prev;
+      save(K.demoDay, day);
+      return generateDemoEntries();
+    });
+  }, []);
+
   const setDemoMode = useCallback((on: boolean) => {
-    if (on) setDemoEntries((prev) => (prev.length ? prev : generateDemoEntries()));
+    if (on) ensureFreshDemo();
     setDemoModeState(on);
+  }, [ensureFreshDemo]);
+
+  // 앱 시작 시 데모가 켜져 있는데 날짜가 지났으면 즉시 갱신
+  useEffect(() => {
+    if (demoMode) ensureFreshDemo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const categories = useMemo<Category[]>(() => {

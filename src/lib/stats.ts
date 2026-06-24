@@ -6,16 +6,28 @@ const emptyDay = (date: string): DayAgg => ({
   date, total: 0, hours: 0, joy: 0, clay: 0, resSum: 0, count: 0, resAvg: 0, entries: [],
 });
 
-/** today 기준 과거 count일의 연속 일별 집계 (oldest → today) */
-export function daySeries(entries: Entry[], coef: number, today: Date, count: number): DayAgg[] {
-  const map = aggregateByDay(entries, coef);
+/** today 기준 과거 count일의 연속 일별 집계 (oldest → today) — 사전 집계 맵 사용 */
+function daySeriesOf(map: Map<string, DayAgg>, today: Date, count: number): DayAgg[] {
   const out: DayAgg[] = [];
   for (let i = count - 1; i >= 0; i--) {
-    const d = addDays(today, -i);
-    const key = toISODate(d);
+    const key = toISODate(addDays(today, -i));
     out.push(map.get(key) ?? emptyDay(key));
   }
   return out;
+}
+
+const monthDaysOf = (map: Map<string, DayAgg>, year: number, month: number): DayAgg[] =>
+  [...map.values()].filter((d) => {
+    const dt = parseISODate(d.date);
+    return dt.getFullYear() === year && dt.getMonth() === month;
+  });
+
+const yearDaysOf = (map: Map<string, DayAgg>, year: number): DayAgg[] =>
+  [...map.values()].filter((d) => parseISODate(d.date).getFullYear() === year);
+
+/** today 기준 과거 count일의 연속 일별 집계 (oldest → today) */
+export function daySeries(entries: Entry[], coef: number, today: Date, count: number): DayAgg[] {
+  return daySeriesOf(aggregateByDay(entries, coef), today, count);
 }
 
 const sumOf = (arr: DayAgg[], k: 'total' | 'hours' | 'joy' | 'clay'): number =>
@@ -25,19 +37,6 @@ const avgResOf = (arr: DayAgg[]): number => {
   let s = 0, c = 0;
   for (const d of arr) { s += d.resSum; c += d.count; }
   return c ? s / c : 0;
-};
-
-const monthDays = (entries: Entry[], coef: number, year: number, month: number): DayAgg[] => {
-  const map = aggregateByDay(entries, coef);
-  return [...map.values()].filter((d) => {
-    const dt = parseISODate(d.date);
-    return dt.getFullYear() === year && dt.getMonth() === month;
-  });
-};
-
-const yearDays = (entries: Entry[], coef: number, year: number): DayAgg[] => {
-  const map = aggregateByDay(entries, coef);
-  return [...map.values()].filter((d) => parseISODate(d.date).getFullYear() === year);
 };
 
 export type PeriodStats = {
@@ -51,23 +50,24 @@ export type PeriodStats = {
 };
 
 export function periodStats(entries: Entry[], coef: number, today: Date, range: RangeKey): PeriodStats {
+  const map = aggregateByDay(entries, coef);
   let cur: DayAgg[];
   let prev: DayAgg[];
   if (range === 'day') {
-    const s = daySeries(entries, coef, today, 2);
+    const s = daySeriesOf(map, today, 2);
     cur = [s[1]];
     prev = [s[0]];
   } else if (range === 'week') {
-    const s = daySeries(entries, coef, today, 14);
+    const s = daySeriesOf(map, today, 14);
     cur = s.slice(7);
     prev = s.slice(0, 7);
   } else if (range === 'month') {
-    cur = monthDays(entries, coef, today.getFullYear(), today.getMonth());
+    cur = monthDaysOf(map, today.getFullYear(), today.getMonth());
     const pm = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    prev = monthDays(entries, coef, pm.getFullYear(), pm.getMonth());
+    prev = monthDaysOf(map, pm.getFullYear(), pm.getMonth());
   } else {
-    cur = yearDays(entries, coef, today.getFullYear());
-    prev = yearDays(entries, coef, today.getFullYear() - 1);
+    cur = yearDaysOf(map, today.getFullYear());
+    prev = yearDaysOf(map, today.getFullYear() - 1);
   }
   const total = sumOf(cur, 'total');
   const clay = sumOf(cur, 'clay');
@@ -89,12 +89,13 @@ export type FlowBar = { label: string; total: number; joy: number; clay: number;
 export type Flow = { bars: FlowBar[]; maxT: number; ma: number[]; showMa: boolean };
 
 export function buildFlow(entries: Entry[], coef: number, today: Date, range: RangeKey, maWin: 7 | 30): Flow {
+  const map = aggregateByDay(entries, coef);
   const bars: FlowBar[] = [];
-  let ma: number[] = [];
+  const ma: number[] = [];
   let showMa = false;
 
   if (range === 'day') {
-    const series = daySeries(entries, coef, today, 30 + 14);
+    const series = daySeriesOf(map, today, 30 + 14);
     const recent = series.slice(-14);
     recent.forEach((d, i) => {
       const dt = parseISODate(d.date);
@@ -114,7 +115,7 @@ export function buildFlow(entries: Entry[], coef: number, today: Date, range: Ra
       ma.push(w.length ? w.reduce((a, d) => a + d.total, 0) / w.length : 0);
     });
   } else if (range === 'week') {
-    const series = daySeries(entries, coef, today, 12 * 7);
+    const series = daySeriesOf(map, today, 12 * 7);
     for (let w = 0; w < 12; w++) {
       const grp = series.slice(w * 7, w * 7 + 7);
       bars.push({
@@ -126,7 +127,7 @@ export function buildFlow(entries: Entry[], coef: number, today: Date, range: Ra
   } else if (range === 'month') {
     for (let m = 11; m >= 0; m--) {
       const dt = new Date(today.getFullYear(), today.getMonth() - m, 1);
-      const grp = monthDays(entries, coef, dt.getFullYear(), dt.getMonth());
+      const grp = monthDaysOf(map, dt.getFullYear(), dt.getMonth());
       bars.push({
         label: `${dt.getMonth() + 1}월`,
         total: sumOf(grp, 'total'), joy: sumOf(grp, 'joy'), clay: sumOf(grp, 'clay'),
@@ -137,7 +138,7 @@ export function buildFlow(entries: Entry[], coef: number, today: Date, range: Ra
     const thisYear = today.getFullYear();
     for (let y = 3; y >= 0; y--) {
       const yr = thisYear - y;
-      const grp = yearDays(entries, coef, yr);
+      const grp = yearDaysOf(map, yr);
       bars.push({
         label: String(yr),
         total: sumOf(grp, 'total'), joy: sumOf(grp, 'joy'), clay: sumOf(grp, 'clay'),
@@ -264,10 +265,11 @@ export const density = (total: number, hours: number): number => (hours > 0 ? to
 // ───────────── 연간 캘린더 히트맵 ─────────────
 
 export type CalLevel = 0 | 1 | 2 | 3 | 4;
-export type CalCell = { date: string; total: number; level: CalLevel; future: boolean };
+export type CalCell = { date: string; total: number; level: CalLevel; future: boolean; met: boolean };
 
-/** GitHub 잔디형 그리드: 열=주(과거→현재), 각 열은 일~토 7칸. weeks 기본 53(약 1년). */
-export function calendarGrid(entries: Entry[], coef: number, today: Date, weeks = 53): CalCell[][] {
+/** GitHub 잔디형 그리드: 열=주(과거→현재), 각 열은 일~토 7칸. weeks 기본 53(약 1년).
+ *  goal 을 주면 '하루 목표 달성' 여부(met)를 칸마다 표시한다. */
+export function calendarGrid(entries: Entry[], coef: number, today: Date, weeks = 53, goal = 0): CalCell[][] {
   const map = aggregateByDay(entries, coef);
   const lastSun = addDays(today, -today.getDay()); // 이번 주 일요일
   // 표시 범위 안의 최댓값으로 레벨 구간 산정
@@ -295,7 +297,7 @@ export function calendarGrid(entries: Entry[], coef: number, today: Date, weeks 
       const day = addDays(colSun, d);
       const iso = toISODate(day);
       const total = map.get(iso)?.total ?? 0;
-      col.push({ date: iso, total, level: levelOf(total), future: day > today });
+      col.push({ date: iso, total, level: levelOf(total), future: day > today, met: goal > 0 && total >= goal });
     }
     cols.push(col);
   }

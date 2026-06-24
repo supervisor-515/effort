@@ -1,18 +1,17 @@
 import { useMemo } from 'react';
 import { useStore } from '../store';
+import { useStatsView } from '../statsView';
 import { f1, fmtHM, parseISODate, shortDateLabel } from '../lib/format';
 import { aggregateByDay } from '../lib/score';
 import { categoryStats, daySeries, streaks } from '../lib/stats';
 import { BackHeader, EmptyState } from '../components/ui';
-
-const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
 type ArchiveCard = { label: string; value: string; sub: string; color: string; iconBg: string };
 
 export function ArchiveScreen() {
   const { entries, categories, settings } = useStore();
   const coef = settings.resistanceCoef;
-  const today = startOfToday();
+  const { today } = useStatsView();
 
   const cards = useMemo<ArchiveCard[] | null>(() => {
     if (entries.length === 0) return null;

@@ -5,7 +5,7 @@ import { f1, mix, TIME_BANDS } from '../lib/format';
 import { aggregateByDay } from '../lib/score';
 import { daySeries, dowResistance, heatmap, resistanceHistogram, weekendSplit } from '../lib/stats';
 import { dowNote, heatNote, histogramNote, recoveryHeading, recoveryNote, resistanceTrendNote, sixMonthNote, weekendNote } from '../lib/insights';
-import { BackHeader, Card, EmptyState } from '../components/ui';
+import { BackHeader, Card, EmptyState, SoftNote } from '../components/ui';
 import { RES_WORDS } from '../lib/format';
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
@@ -206,7 +206,7 @@ export function ResistanceScreen() {
 }
 
 function Note({ children }: { children: React.ReactNode }) {
-  return <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '10px 12px', marginTop: 14 }}>{children}</div>;
+  return <SoftNote style={{ marginTop: 14 }}>{children}</SoftNote>;
 }
 function WeBar({ label, avg, res, max, color }: { label: string; avg: number; res: number; max: number; color: string }) {
   return (

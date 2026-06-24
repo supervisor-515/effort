@@ -1,29 +1,32 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store';
+import { useStatsView } from '../statsView';
 import { entryEffort, entryHours } from '../lib/score';
 import {
-  addDays, currentBand, entryBand, fmtHM, fullDateLabel, relDateLabel, resWord, TIME_BANDS, toISODate, f1,
+  addDays, currentBand, entryBand, fmtHM, fullDateLabel, parseISODate, relDateLabel, resWord, TIME_BANDS, toISODate, f1,
 } from '../lib/format';
 import { streaks } from '../lib/stats';
 import { Lozenge, btnPrimary, btnDefault } from '../components/ui';
 import type { Category, Entry, Resistance } from '../types';
-
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
 
 type Draft = { text: string; units: number; resistance: Resistance; catId: string; band: number };
 const PRESETS: { label: string; units: number }[] = [
   { label: '15분', units: 1 }, { label: '30분', units: 2 }, { label: '1시간', units: 4 }, { label: '2시간', units: 8 },
 ];
 
-export function InputScreen() {
+export function InputScreen({ initialDate }: { initialDate?: string }) {
   const { entries, categories, addEntry, updateEntry, removeEntry, restoreEntry, settings } = useStore();
   const coef = settings.resistanceCoef;
+  const { today } = useStatsView();
 
-  const [offset, setOffset] = useState(0);
+  // 달력 등에서 특정 날짜로 진입하면 그 날짜를 연다
+  const initOffset = useMemo(() => {
+    if (!initialDate) return 0;
+    const diff = Math.round((today.getTime() - parseISODate(initialDate).getTime()) / 86400000);
+    return Math.max(0, diff);
+  }, [initialDate, today]);
+  const [offset, setOffset] = useState(initOffset);
+  useEffect(() => { setOffset(initOffset); }, [initOffset]);
   const [composerOpen, setComposerOpen] = useState(true);
   const [draft, setDraft] = useState<Draft>(() => ({ text: '', units: 4, resistance: 2, catId: categories[0]?.id ?? 'study', band: currentBand() }));
   const [popKey, setPopKey] = useState(0);
@@ -65,7 +68,6 @@ export function InputScreen() {
     setComposerOpen((o) => !o);
   };
 
-  const today = startOfToday();
   const selDate = addDays(today, -offset);
   const iso = toISODate(selDate);
 
