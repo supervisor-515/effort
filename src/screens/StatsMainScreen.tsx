@@ -3,8 +3,9 @@ import { useStore } from '../store';
 import { useStatsView } from '../statsView';
 import { navigate } from '../router';
 import { addDays, addMonths, f1, fmtHM, parseISODate, toISODate } from '../lib/format';
-import { buildFlow, categoryStats, periodStats } from '../lib/stats';
+import { buildFlow, categoryStats, goalStats, periodStats, projection } from '../lib/stats';
 import { periodFilter, ratioNote, RANGE_LABEL, RANGE_TITLE, recapLine } from '../lib/period';
+import { goalNote, projectionNote } from '../lib/insights';
 import { Card, EmptyState, ScreenHeader, SectionLabel } from '../components/ui';
 import type { RangeKey } from '../types';
 
@@ -88,6 +89,14 @@ export function StatsMainScreen() {
 
   const stats = useMemo(() => periodStats(entries, coef, anchor, range), [entries, coef, range, anchor]);
   const flow = useMemo(() => buildFlow(entries, coef, anchor, range, maWin), [entries, coef, range, maWin, anchor]);
+  const goal = useMemo(
+    () => (range === 'day' ? null : goalStats(entries, coef, settings.dailyGoal, periodFilter(range, anchor))),
+    [entries, coef, settings.dailyGoal, range, anchor],
+  );
+  const proj = useMemo(
+    () => ((range === 'month' || range === 'year') && atLatest ? projection(entries, coef, today, range) : null),
+    [entries, coef, range, atLatest, today],
+  );
   const cats = useMemo(
     () => categoryStats(entries, categories, coef, periodFilter(range, anchor)).filter((c) => c.effort > 0),
     [entries, categories, coef, range, anchor],
@@ -210,7 +219,20 @@ export function StatsMainScreen() {
               <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                 <Chip>가장 많이 쌓인 <b style={{ color: 'var(--olive)', fontWeight: 600 }}>{topCat}</b></Chip>
                 <Chip>가장 많이 버틴 <b style={{ color: 'var(--clay)', fontWeight: 600 }}>{topClayCat}</b></Chip>
+                {goal && goal.activeDays > 0 && (
+                  <Chip>목표 달성 <b style={{ color: 'var(--olive)', fontWeight: 600 }}>{goal.metDays}일</b> / {goal.activeDays}일</Chip>
+                )}
               </div>
+              {proj && (
+                <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--olive-text)', background: 'var(--olive-subtle)', borderRadius: 10, padding: '9px 11px', marginTop: 12 }}>
+                  {projectionNote(proj, stats.total, range as 'month' | 'year')}
+                </div>
+              )}
+              {goal && (
+                <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)', marginTop: 8 }}>
+                  {goalNote(goal.metDays, goal.activeDays, goal.goal)}
+                </div>
+              )}
             </Card>
 
             {/* 한 줄 회고 */}
@@ -239,12 +261,14 @@ export function StatsMainScreen() {
                     const jf = b.total > 0 ? b.joy / b.total : 0;
                     const sel = selBar === i;
                     return (
-                      <div key={i} onClick={() => setSelBar(sel ? null : i)} style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'flex-end', cursor: 'pointer', opacity: anySel ? (sel ? 1 : 0.4) : 1, transition: 'opacity .3s' }}>
+                      <button key={i} onClick={() => setSelBar(sel ? null : i)}
+                        aria-label={`${b.label || `${i + 1}번째`} · ${b.body}`} aria-pressed={sel}
+                        style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'flex-end', cursor: 'pointer', opacity: anySel ? (sel ? 1 : 0.4) : 1, transition: 'opacity .3s', border: 'none', background: 'transparent', padding: 0 }}>
                         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', borderRadius: 4, overflow: 'hidden', border: `1.5px solid ${sel ? 'var(--ink)' : 'transparent'}` }}>
                           <div style={{ height: `${(fr * (1 - jf) * 100).toFixed(1)}%`, background: 'var(--clay)', transition: 'height .5s cubic-bezier(.2,.8,.3,1)' }} />
                           <div style={{ height: `${(fr * jf * 100).toFixed(1)}%`, background: 'var(--olive)', transition: 'height .5s cubic-bezier(.2,.8,.3,1)' }} />
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -320,12 +344,15 @@ export function StatsMainScreen() {
               <button onClick={() => navigate('#/stats/category')} style={linkBtn}>카테고리 분석 자세히 보기 ›</button>
             </Card>
 
-            {/* 리포트/아카이브 진입 */}
+            {/* 리포트/아카이브/달력 진입 */}
             <SectionLabel>돌아보기</SectionLabel>
             <div style={{ display: 'flex', gap: 10 }}>
               <EnterCard onClick={() => navigate('#/stats/report')} big={`${today.getMonth() + 1}월`} sub="노력 리포트 ›" />
               <EnterCard onClick={() => navigate('#/stats/archive')} big="기록" sub="최고기록 아카이브 ›" />
             </div>
+            <button onClick={() => navigate('#/stats/calendar')} style={{ ...linkBtn, marginTop: 10, height: 48 }}>
+              노력 달력 — 한 해의 흐름을 잔디로 보기 ›
+            </button>
           </>
         )}
       </div>

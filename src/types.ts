@@ -18,6 +18,7 @@ export type ThemePref = 'auto' | 'light' | 'dark';
 export type Settings = {
   resistanceCoef: number; // 기본 0.3
   theme: ThemePref; // 화면 테마
+  dailyGoal: number; // 하루 목표 노력 점수(기본 10)
 };
 
 export type RangeKey = 'day' | 'week' | 'month' | 'year';

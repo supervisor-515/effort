@@ -10,6 +10,7 @@ import { ResistanceScreen } from './screens/ResistanceScreen';
 import { CategoryScreen } from './screens/CategoryScreen';
 import { ReportScreen } from './screens/ReportScreen';
 import { ArchiveScreen } from './screens/ArchiveScreen';
+import { CalendarScreen } from './screens/CalendarScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 
 const GUIDE_SEEN_KEY = 'effort.guideSeen';
@@ -54,6 +55,7 @@ export function App() {
       case 'category': screen = <CategoryScreen />; break;
       case 'report': screen = <ReportScreen />; break;
       case 'archive': screen = <ArchiveScreen />; break;
+      case 'calendar': screen = <CalendarScreen />; break;
       default: screen = <StatsMainScreen />; break;
     }
   }

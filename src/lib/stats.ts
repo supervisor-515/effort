@@ -260,3 +260,160 @@ export function stabilityIndex(entries: Entry[], coef: number, today: Date, coun
 
 /** 노력 밀도 = 노력 점수 ÷ 투입 시간 */
 export const density = (total: number, hours: number): number => (hours > 0 ? total / hours : 0);
+
+// ───────────── 연간 캘린더 히트맵 ─────────────
+
+export type CalLevel = 0 | 1 | 2 | 3 | 4;
+export type CalCell = { date: string; total: number; level: CalLevel; future: boolean };
+
+/** GitHub 잔디형 그리드: 열=주(과거→현재), 각 열은 일~토 7칸. weeks 기본 53(약 1년). */
+export function calendarGrid(entries: Entry[], coef: number, today: Date, weeks = 53): CalCell[][] {
+  const map = aggregateByDay(entries, coef);
+  const lastSun = addDays(today, -today.getDay()); // 이번 주 일요일
+  // 표시 범위 안의 최댓값으로 레벨 구간 산정
+  let maxT = 0;
+  for (let c = weeks - 1; c >= 0; c--) {
+    const colSun = addDays(lastSun, -7 * c);
+    for (let d = 0; d < 7; d++) {
+      const t = map.get(toISODate(addDays(colSun, d)))?.total ?? 0;
+      if (t > maxT) maxT = t;
+    }
+  }
+  const levelOf = (t: number): CalLevel => {
+    if (t <= 0 || maxT <= 0) return 0;
+    const r = t / maxT;
+    if (r <= 0.25) return 1;
+    if (r <= 0.5) return 2;
+    if (r <= 0.75) return 3;
+    return 4;
+  };
+  const cols: CalCell[][] = [];
+  for (let c = weeks - 1; c >= 0; c--) {
+    const colSun = addDays(lastSun, -7 * c);
+    const col: CalCell[] = [];
+    for (let d = 0; d < 7; d++) {
+      const day = addDays(colSun, d);
+      const iso = toISODate(day);
+      const total = map.get(iso)?.total ?? 0;
+      col.push({ date: iso, total, level: levelOf(total), future: day > today });
+    }
+    cols.push(col);
+  }
+  return cols;
+}
+
+// ───────────── 페이스 예측 ─────────────
+
+export type Projection = { projected: number; elapsed: number; total: number; remaining: number };
+
+/** 이번 달/올해 현재 누적과 경과 비율로 기말 예상치 산출(현재 기간일 때만 의미). */
+export function projection(entries: Entry[], coef: number, today: Date, range: 'month' | 'year'): Projection | null {
+  const map = aggregateByDay(entries, coef);
+  let cur: DayAgg[];
+  let elapsed: number;
+  let total: number;
+  if (range === 'month') {
+    cur = [...map.values()].filter((d) => {
+      const dt = parseISODate(d.date);
+      return dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth();
+    });
+    total = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    elapsed = today.getDate();
+  } else {
+    cur = [...map.values()].filter((d) => parseISODate(d.date).getFullYear() === today.getFullYear());
+    const start = new Date(today.getFullYear(), 0, 1);
+    total = (new Date(today.getFullYear(), 11, 31).getTime() - start.getTime()) / 86400000 + 1;
+    elapsed = (today.getTime() - start.getTime()) / 86400000 + 1;
+  }
+  const sum = cur.reduce((a, d) => a + d.total, 0);
+  if (sum <= 0 || elapsed <= 0) return null;
+  const projected = (sum / elapsed) * total;
+  return { projected, elapsed: Math.round(elapsed), total: Math.round(total), remaining: Math.max(0, Math.round(total - elapsed)) };
+}
+
+// ───────────── 일일 목표 달성 ─────────────
+
+export type GoalStats = { metDays: number; activeDays: number; goal: number };
+
+/** 기간 내 '하루 노력량 ≥ 목표'를 달성한 날 수. */
+export function goalStats(entries: Entry[], coef: number, goal: number, filter: (e: Entry) => boolean): GoalStats {
+  const map = aggregateByDay(entries.filter(filter), coef);
+  const days = [...map.values()];
+  const metDays = days.filter((d) => d.total >= goal).length;
+  return { metDays, activeDays: days.length, goal };
+}
+
+// ───────────── 저항도 분포 ─────────────
+
+/** 저항 0~5 별 [항목 수, 노력량] */
+export function resistanceHistogram(entries: Entry[], coef: number): { count: number[]; effort: number[] } {
+  const count = [0, 0, 0, 0, 0, 0];
+  const effort = [0, 0, 0, 0, 0, 0];
+  for (const e of entries) {
+    const r = e.resistance;
+    count[r] += 1;
+    effort[r] += entryEffort(e, coef);
+  }
+  return { count, effort };
+}
+
+// ───────────── 평일 vs 주말 ─────────────
+
+export type WeekendSplit = { weekdayAvg: number; weekendAvg: number; weekdayRes: number; weekendRes: number };
+
+/** 평일/주말의 '활동한 하루 평균 노력량'과 평균 저항. */
+export function weekendSplit(entries: Entry[], coef: number): WeekendSplit {
+  const days = [...aggregateByDay(entries, coef).values()];
+  let wdT = 0, wdN = 0, weT = 0, weN = 0;
+  let wdRsum = 0, wdRcnt = 0, weRsum = 0, weRcnt = 0;
+  for (const d of days) {
+    const dow = parseISODate(d.date).getDay();
+    const weekend = dow === 0 || dow === 6;
+    if (weekend) { weT += d.total; weN += 1; weRsum += d.resSum; weRcnt += d.count; }
+    else { wdT += d.total; wdN += 1; wdRsum += d.resSum; wdRcnt += d.count; }
+  }
+  return {
+    weekdayAvg: wdN ? wdT / wdN : 0,
+    weekendAvg: weN ? weT / weN : 0,
+    weekdayRes: wdRcnt ? wdRsum / wdRcnt : 0,
+    weekendRes: weRcnt ? weRsum / weRcnt : 0,
+  };
+}
+
+// ───────────── 전체 누적 ─────────────
+
+export type Lifetime = { effort: number; hours: number; entries: number; activeDays: number; firstDate: string | null };
+
+/** 시작 이후 전체 누적치. */
+export function lifetimeTotals(entries: Entry[], coef: number): Lifetime {
+  if (entries.length === 0) return { effort: 0, hours: 0, entries: 0, activeDays: 0, firstDate: null };
+  const days = new Set<string>();
+  let effort = 0, hours = 0, first = entries[0].date;
+  for (const e of entries) {
+    effort += entryEffort(e, coef);
+    hours += entryHours(e);
+    days.add(e.date);
+    if (e.date < first) first = e.date;
+  }
+  return { effort, hours, entries: entries.length, activeDays: days.size, firstDate: first };
+}
+
+// ───────────── CSV 내보내기 ─────────────
+
+/** 기록을 CSV 문자열로. (엑셀/외부 분석용) */
+export function toCSV(entries: Entry[], categories: Category[], coef: number): string {
+  const catName = new Map(categories.map((c) => [c.id, c.name]));
+  const esc = (s: string) => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  const header = ['date', 'category', 'text', 'hours', 'resistance', 'effort'];
+  const rows = [...entries]
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    .map((e) => [
+      e.date,
+      esc(catName.get(e.categoryId) ?? e.categoryId),
+      esc(e.text),
+      entryHours(e).toFixed(2),
+      String(e.resistance),
+      entryEffort(e, coef).toFixed(2),
+    ].join(','));
+  return [header.join(','), ...rows].join('\n');
+}

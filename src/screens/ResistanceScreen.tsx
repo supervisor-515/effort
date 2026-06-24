@@ -3,9 +3,10 @@ import { useStore } from '../store';
 import { useStatsView } from '../statsView';
 import { f1, mix, TIME_BANDS } from '../lib/format';
 import { aggregateByDay } from '../lib/score';
-import { daySeries, dowResistance, heatmap } from '../lib/stats';
-import { dowNote, heatNote, recoveryHeading, recoveryNote, resistanceTrendNote, sixMonthNote } from '../lib/insights';
+import { daySeries, dowResistance, heatmap, resistanceHistogram, weekendSplit } from '../lib/stats';
+import { dowNote, heatNote, histogramNote, recoveryHeading, recoveryNote, resistanceTrendNote, sixMonthNote, weekendNote } from '../lib/insights';
 import { BackHeader, Card, EmptyState } from '../components/ui';
+import { RES_WORDS } from '../lib/format';
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const resColor = (v: number) => mix('#6F7252', '#C07B53', (v - 1) / 3.2);
@@ -54,7 +55,9 @@ export function ResistanceScreen() {
     const dwMaxI = dow.indexOf(Math.max(...dow));
     const heat = heatmap(entries);
     const heatHas = heat.some((row) => row.some((c) => c.has));
-    return { weekRes, recRes, recPrevRes, recClay, ratioMonths, dow, dwMaxI, heat, heatHas };
+    const hist = resistanceHistogram(entries, coef);
+    const weekend = weekendSplit(entries, coef);
+    return { weekRes, recRes, recPrevRes, recClay, ratioMonths, dow, dwMaxI, heat, heatHas, hist, weekend };
   }, [entries, coef, today]);
 
   if (entries.length === 0) {
@@ -69,6 +72,8 @@ export function ResistanceScreen() {
   }
 
   const wrMax = Math.max(...data.weekRes, 0.1);
+  const histMax = Math.max(...data.hist.count, 1);
+  const weMax = Math.max(data.weekend.weekdayAvg, data.weekend.weekendAvg, 0.1);
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -139,6 +144,31 @@ export function ResistanceScreen() {
           <Note>{dowNote(data.dow)}</Note>
         </Card>
 
+        {/* 저항도 분포 */}
+        <Card style={{ marginTop: 14 }}>
+          <div style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)' }}>저항도 분포</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 110, marginTop: 16 }}>
+            {data.hist.count.map((c, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, justifyContent: 'flex-end', height: '100%' }}>
+                <span style={{ font: '500 11px var(--font-serif)', color: 'var(--ink-soft)' }}>{c}</span>
+                <div title={`저항 ${i} · ${RES_WORDS[i]} · ${c}개`} style={{ width: '100%', height: `${(c / histMax * 100).toFixed(1)}%`, background: resColor(i), borderRadius: 4, minHeight: c > 0 ? 4 : 0, transition: 'height .5s' }} />
+                <span style={{ font: '400 11px var(--font-sans)', color: i >= 3 ? 'var(--clay)' : 'var(--ink-mute)' }}>{i}</span>
+              </div>
+            ))}
+          </div>
+          <Note>{histogramNote(data.hist.count)}</Note>
+        </Card>
+
+        {/* 평일 vs 주말 */}
+        <Card style={{ marginTop: 14 }}>
+          <div style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)' }}>평일 vs 주말</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+            <WeBar label="평일" avg={data.weekend.weekdayAvg} res={data.weekend.weekdayRes} max={weMax} color="var(--olive)" />
+            <WeBar label="주말" avg={data.weekend.weekendAvg} res={data.weekend.weekendRes} max={weMax} color="var(--clay)" />
+          </div>
+          <Note>{weekendNote(data.weekend)}</Note>
+        </Card>
+
         {/* 시간대 히트맵 */}
         <Card style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -177,6 +207,19 @@ export function ResistanceScreen() {
 
 function Note({ children }: { children: React.ReactNode }) {
   return <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--clay-accent)', background: 'var(--card-2)', borderRadius: 10, padding: '10px 12px', marginTop: 14 }}>{children}</div>;
+}
+function WeBar({ label, avg, res, max, color }: { label: string; avg: number; res: number; max: number; color: string }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, font: '400 12px var(--font-sans)', color: 'var(--ink-soft)' }}>
+        <span style={{ fontWeight: 500, color: 'var(--ink)' }}>{label}</span>
+        <span style={{ color: 'var(--ink-mute)' }}>하루 평균 {f1(avg)}점 · 저항 {f1(res)}</span>
+      </div>
+      <div style={{ height: 12, borderRadius: 99, background: 'var(--card-2)', overflow: 'hidden' }}>
+        <div style={{ width: `${(avg / max * 100).toFixed(1)}%`, height: '100%', background: color, borderRadius: 99, transition: 'width .5s' }} />
+      </div>
+    </div>
+  );
 }
 function RecCell({ value, label, color }: { value: string; label: string; color: string }) {
   return (

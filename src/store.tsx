@@ -14,7 +14,17 @@ const K = {
 const DEFAULT_SETTINGS: Settings = {
   resistanceCoef: 0.3,
   theme: 'auto',
+  dailyGoal: 10,
 };
+
+const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));
+
+/** 가져온 항목을 안전한 범위로 보정 */
+function sanitizeEntry(e: Entry): Entry {
+  const units = Number.isFinite(e.units) ? Math.max(0, Math.round(e.units)) : 0;
+  const res = Number.isFinite(e.resistance) ? (clamp(Math.round(e.resistance), 0, 5) as Entry['resistance']) : 0;
+  return { ...e, units, resistance: res };
+}
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -195,7 +205,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!d.entries.every(validEntry) || !d.categories.every(validCat)) {
       return { ok: false, error: '백업 데이터가 손상된 것 같아요.' };
     }
-    setRealEntries(d.entries as Entry[]);
+    setRealEntries((d.entries as Entry[]).map(sanitizeEntry));
     setStoredCats(d.categories as Category[]);
     if (d.settings && typeof d.settings === 'object') {
       setSettings({ ...DEFAULT_SETTINGS, ...(d.settings as Settings) });

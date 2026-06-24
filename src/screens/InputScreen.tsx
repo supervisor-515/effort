@@ -75,8 +75,9 @@ export function InputScreen() {
   const totalEffort = dayItems.reduce((a, e) => a + entryEffort(e, coef), 0);
   const totalHours = dayItems.reduce((a, e) => a + entryHours(e), 0);
   const joy = dayItems.filter((e) => e.resistance <= 2).reduce((a, e) => a + entryEffort(e, coef), 0);
-  const goal = 10;
-  const fill = Math.min(totalEffort / goal, 1);
+  const goal = settings.dailyGoal;
+  const goalMet = goal > 0 && totalEffort >= goal;
+  const fill = goal > 0 ? Math.min(totalEffort / goal, 1) : (totalEffort > 0 ? 1 : 0);
   const split = totalEffort > 0 ? joy / totalEffort : 0;
   const joyW = fill * split * 100;
   const clayW = fill * (1 - split) * 100;
@@ -152,9 +153,14 @@ export function InputScreen() {
             <div style={{ width: `${joyW}%`, background: 'var(--olive)', transition: 'width .55s cubic-bezier(.2,.8,.3,1)' }} />
             <div style={{ width: `${clayW}%`, background: 'var(--clay)', transition: 'width .55s cubic-bezier(.2,.8,.3,1)' }} />
           </div>
-          <div style={{ display: 'flex', gap: 16, marginTop: 11 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 11 }}>
             <Legend color="var(--olive)" label="즐겁게 한 노력" />
             <Legend color="var(--clay)" label="버텨낸 노력" />
+            {goal > 0 && (
+              <span style={{ marginLeft: 'auto', font: '500 11px var(--font-sans)', color: goalMet ? 'var(--olive-text)' : 'var(--ink-mute)' }}>
+                {goalMet ? `✓ 목표 ${f1(goal)}점 달성` : `목표 ${f1(totalEffort)} / ${f1(goal)}점`}
+              </span>
+            )}
           </div>
         </div>
 

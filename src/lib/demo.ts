@@ -47,8 +47,15 @@ const PROFILES: Profile[] = [
   { id: 'recover', texts: ['낮잠과 휴식', '명상 10분', '따뜻한 차 한 잔', '일찍 잠자리'], baseH: 0.55, freq: 0.38, resMean: 1.1, resSp: 0.6, hour: 15 },
 ];
 
-/** 데모용 1년치 샘플 항목 생성. anchor = '오늘'(기본 2026-06-20). */
-export function generateDemoEntries(anchor = new Date(2026, 5, 20)): Entry[] {
+/** 자정으로 맞춘 '오늘' */
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** 데모용 1년치 샘플 항목 생성. 기본 anchor = 실제 '오늘'(데모가 항상 현재처럼 보이도록). */
+export function generateDemoEntries(anchor: Date = startOfToday()): Entry[] {
   const rng = mulberry32(424242);
   const g = () => rng() + rng() + rng() - 1.5;
   const dowRes = [-0.2, 0.95, 0.15, 0.4, -0.55, -0.05, -0.3];

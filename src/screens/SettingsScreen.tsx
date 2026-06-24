@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useStore } from '../store';
 import { CATEGORY_PALETTE } from '../lib/demo';
-import { Card, ScreenHeader, SectionLabel, btnPrimary, btnDefault } from '../components/ui';
+import { f1, fmtHM, parseISODate, shortDateLabel } from '../lib/format';
+import { lifetimeTotals, toCSV } from '../lib/stats';
+import { Card, ScreenHeader, SectionLabel, StatTriple, btnPrimary, btnDefault } from '../components/ui';
 import type { ThemePref } from '../types';
 
 const COLOR_OPTIONS = Array.from(new Set([
@@ -14,10 +16,13 @@ const THEMES: { key: ThemePref; label: string }[] = [
 
 export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
   const {
-    categories, settings, demoMode,
+    entries, categories, settings, demoMode,
     addCategory, updateCategory, moveCategory, removeCategory, categoryEntryCount,
     updateSettings, setDemoMode, exportData, importData,
   } = useStore();
+  const life = useMemo(() => lifetimeTotals(entries, settings.resistanceCoef), [entries, settings.resistanceCoef]);
+  const goal = settings.dailyGoal;
+  const setGoal = (g: number) => updateSettings({ dailyGoal: Math.max(1, Math.min(50, Math.round(g))) });
   const [newCat, setNewCat] = useState('');
   const [colorEditId, setColorEditId] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<{ id: string; count: number; reassignTo: string } | null>(null);
@@ -51,6 +56,20 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
     a.click();
     URL.revokeObjectURL(url);
     flash('백업 파일을 내보냈어요.');
+  };
+
+  const onExportCsv = () => {
+    const csv = toCSV(entries, categories, coef);
+    // 엑셀 한글 깨짐 방지용 BOM
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `노력기록-${stamp}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    flash('CSV 파일을 내보냈어요.');
   };
 
   const onImportFile = async (file: File) => {
@@ -102,6 +121,21 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
               <ExRow label="저항 0" w={exW(0)} val={ex(0).toFixed(2)} barColor="var(--olive)" />
               <ExRow label="저항 3" w={exW(3)} val={ex(3).toFixed(2)} barColor="var(--clay)" />
               <ExRow label="저항 5" w={exW(5)} val={ex(5).toFixed(2)} barColor="var(--clay)" />
+            </div>
+          </div>
+
+          {/* 하루 목표 */}
+          <div style={{ borderTop: '1px solid var(--line-2)', marginTop: 18, paddingTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ font: '500 14px var(--font-sans)', color: 'var(--ink)' }}>하루 목표 노력 점수</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button onClick={() => setGoal(goal - 1)} aria-label="목표 줄이기" style={miniBtn}>−</button>
+                <span style={{ font: '600 22px var(--font-serif)', color: 'var(--olive-text)', minWidth: 34, textAlign: 'center' }}>{f1(goal)}</span>
+                <button onClick={() => setGoal(goal + 1)} aria-label="목표 늘리기" style={miniBtn}>＋</button>
+              </div>
+            </div>
+            <div style={{ font: '400 12px/1.5 var(--font-sans)', color: 'var(--ink-soft)', marginTop: 8 }}>
+              입력 화면의 진행 막대와 통계의 ‘목표 달성 일수’ 기준이에요. 예) 1시간짜리 일을 {Math.max(1, Math.round(goal))}개쯤 한 정도.
             </div>
           </div>
         </Card>
@@ -182,6 +216,25 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
           </div>
         </Card>
 
+        {/* 전체 기록 */}
+        {life.entries > 0 && (
+          <>
+            <SectionLabel>전체 기록</SectionLabel>
+            <Card>
+              <StatTriple items={[
+                { value: f1(life.effort), label: '총 노력량' },
+                { value: fmtHM(life.hours), label: '총 시간' },
+                { value: `${life.activeDays}일`, label: '기록한 날' },
+              ]} />
+              {life.firstDate && (
+                <div style={{ font: '400 11.5px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 12, textAlign: 'center' }}>
+                  {shortDateLabel(parseISODate(life.firstDate))}부터 총 {life.entries}개의 기록을 쌓았어요.
+                </div>
+              )}
+            </Card>
+          </>
+        )}
+
         {/* 데이터 백업 */}
         <SectionLabel>데이터 백업</SectionLabel>
         <Card>
@@ -194,8 +247,11 @@ export function SettingsScreen({ onOpenGuide }: { onOpenGuide: () => void }) {
             <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: 'none' }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onImportFile(f); e.target.value = ''; }} />
           </div>
+          <button onClick={onExportCsv} disabled={life.entries === 0} style={{ ...btnDefault, width: '100%', height: 44, marginTop: 10, opacity: life.entries === 0 ? 0.5 : 1 }}>
+            CSV로 내보내기 (엑셀·외부 분석용)
+          </button>
           <div style={{ font: '400 11px/1.5 var(--font-sans)', color: 'var(--ink-mute)', marginTop: 10 }}>
-            ※ 가져오기는 현재 기록을 백업 파일 내용으로 <b>덮어씁니다</b>.
+            ※ 가져오기는 현재 기록을 백업 파일 내용으로 <b>덮어씁니다</b>. CSV는 백업 복원용이 아니에요(읽기 전용).
           </div>
         </Card>
 

@@ -1,6 +1,6 @@
 import { f1, TIME_BANDS } from './format';
 import { density as densityOf } from './stats';
-import type { CatStat } from './stats';
+import type { CatStat, Projection, WeekendSplit } from './stats';
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const BANDS = TIME_BANDS;
@@ -92,4 +92,48 @@ export function categoryInsight(c: CatStat, ctx: { maxHours: number; isTop: bool
     body += ` 시간당 ${f1(dens)}점으로 밀도 있게 집중했어요.`;
   }
   return ctx.isTop ? `이번 흐름에서 가장 많이 쌓인 영역이에요. ${body}` : body;
+}
+
+// ───────────── 페이스 예측 ─────────────
+
+/** 예상치 vs 현재 누적 코멘트 */
+export function projectionNote(p: Projection, current: number, range: 'month' | 'year'): string {
+  const unit = range === 'month' ? '이번 달' : '올해';
+  if (p.remaining <= 0) return `${unit}을 마무리했어요. 최종 ${f1(current)}점이에요.`;
+  return `지금 페이스라면 ${unit}은 약 ${f1(p.projected)}점으로 마무리될 것 같아요. (남은 ${p.remaining}일 · 현재 ${f1(current)}점)`;
+}
+
+// ───────────── 일일 목표 ─────────────
+
+export function goalNote(metDays: number, activeDays: number, goal: number): string {
+  if (activeDays === 0) return `하루 목표는 ${goal}점이에요. 기록이 쌓이면 달성한 날을 세어드려요.`;
+  const rate = Math.round((metDays / activeDays) * 100);
+  if (rate >= 80) return `기록한 ${activeDays}일 중 ${metDays}일을 목표(${goal}점) 이상 달성했어요. 흐름이 아주 단단해요.`;
+  if (rate >= 50) return `기록한 ${activeDays}일 중 ${metDays}일이 목표(${goal}점)를 넘겼어요. 절반 넘게 채웠어요.`;
+  if (metDays > 0) return `${metDays}일이 목표(${goal}점)를 넘겼어요. 목표를 살짝 낮춰 더 자주 닿게 해도 좋아요.`;
+  return `아직 목표(${goal}점)를 넘긴 날은 없어요. 목표가 버겁다면 설정에서 낮춰보세요.`;
+}
+
+// ───────────── 저항도 분포 ─────────────
+
+export function histogramNote(count: number[]): string {
+  const total = count.reduce((a, b) => a + b, 0);
+  if (total === 0) return '아직 분포를 볼 기록이 적어요.';
+  let maxI = 0;
+  for (let i = 1; i < count.length; i++) if (count[i] > count[maxI]) maxI = i;
+  const RES = ['편하게 함', '살짝 귀찮음', '미루고 싶었음', '하기 싫었음', '진짜 버팀', '나를 이김'];
+  const pct = Math.round((count[maxI] / total) * 100);
+  const heavyPct = Math.round(((count[3] + count[4] + count[5]) / total) * 100);
+  return `‘${RES[maxI]}’(저항 ${maxI}) 항목이 ${pct}%로 가장 많아요. 버텨낸 항목(저항 3+)은 전체의 ${heavyPct}%예요.`;
+}
+
+// ───────────── 평일 vs 주말 ─────────────
+
+export function weekendNote(s: WeekendSplit): string {
+  if (s.weekdayAvg === 0 && s.weekendAvg === 0) return '평일·주말 비교는 기록이 더 쌓이면 보여드려요.';
+  const wd = f1(s.weekdayAvg);
+  const we = f1(s.weekendAvg);
+  if (s.weekdayAvg >= s.weekendAvg * 1.25) return `평일 하루 평균 ${wd}점으로 주말(${we}점)보다 활발해요. 평일에 더 많이 쌓는 편이에요.`;
+  if (s.weekendAvg >= s.weekdayAvg * 1.25) return `주말 하루 평균 ${we}점으로 평일(${wd}점)보다 높아요. 주말에 더 몰아서 하는 편이에요.`;
+  return `평일 ${wd}점, 주말 ${we}점으로 큰 차이 없이 고르게 이어가고 있어요.`;
 }
