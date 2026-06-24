@@ -51,16 +51,18 @@ export function recapLine(p: {
   const t = `${rw}${topic(rw)}`;
   const c = p.clayPct;
 
+  // 분해 방식 변경(저항 비율 배분)에 맞춘 임계값: clayPct ≈ 20 × 평균 저항.
+  // 35→avgRes 1.75, 52→2.6, 68→3.4 기준.
   let body: string;
   if (p.range === 'year') {
-    body = c <= 45
+    body = c <= 55
       ? '올해는 천천히, 그러나 분명히 쌓였어요.'
       : '올해는 버텨낸 시간이 많았던 한 해였어요. 그만큼 단단해졌어요.';
-  } else if (c <= 30) {
+  } else if (c <= 35) {
     body = `${t} 즐겁게 한 노력이 중심이었어요. 무리 없이 가볍게 흘러갔어요.`;
-  } else if (c <= 45) {
+  } else if (c <= 52) {
     body = `${t} 즐겁게 한 노력과 버텨낸 노력이 고르게 섞였어요.`;
-  } else if (c <= 65) {
+  } else if (c <= 68) {
     body = `${t} 빠르게 달렸다기보다, 하기 싫은 순간을 여러 번 넘긴 시간이었어요.`;
   } else {
     body = `${t} 버텨낸 노력이 대부분이었어요. 힘든 걸 정말 많이 넘겼어요.`;
@@ -77,11 +79,12 @@ export function recapLine(p: {
   return body + tail;
 }
 
-/** 즐겁게 vs 버텨냄 비율 코멘트 — 5단계 */
+/** 즐겁게 vs 버텨냄 비율 코멘트 — 5단계.
+ *  저항 비율 배분(clayPct ≈ 20×평균 저항)에 맞춘 임계값. */
 export function ratioNote(clayPct: number): string {
-  if (clayPct <= 20) return '거의 다 즐겁게 한 노력이었어요. 가볍게 흘러간 시기예요.';
-  if (clayPct <= 40) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
-  if (clayPct <= 55) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
-  if (clayPct <= 70) return '버텨낸 노력의 비중이 컸어요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.';
+  if (clayPct <= 25) return '거의 다 즐겁게 한 노력이었어요. 가볍게 흘러간 시기예요.';
+  if (clayPct <= 45) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
+  if (clayPct <= 58) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
+  if (clayPct <= 72) return '버텨낸 노력의 비중이 컸어요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.';
   return '대부분이 버텨낸 노력이었어요. 무리하지 않았는지 살펴봐도 좋아요.';
 }

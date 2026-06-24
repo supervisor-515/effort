@@ -9,7 +9,8 @@ import { useStatsView } from '../statsView';
 import { BackHeader, EmptyState } from '../components/ui';
 
 function classifyStyle(clayPct: number, dens: number, stability: number): { style: string; note: string } {
-  if (clayPct >= 45) return { style: '고저항 돌파형', note: `버텨낸 비율이 ${clayPct}%로 높았어요. 저항이 큰 일을 여러 번 정면으로 넘긴 달이에요.` };
+  // 저항 비율 배분(clayPct ≈ 20×평균 저항)에서 60% ≈ 평균 저항 3.0 이상
+  if (clayPct >= 60) return { style: '고저항 돌파형', note: `버텨낸 비율이 ${clayPct}%로 높았어요. 저항이 큰 일을 여러 번 정면으로 넘긴 달이에요.` };
   if (stability >= 70) return { style: '꾸준한 축적형', note: `안정감 지수 ${stability}로, 큰 기복 없이 매일 비슷하게 쌓은 단단한 달이에요.` };
   if (dens >= 1.6) return { style: '짧고 굵은 집중형', note: `투입 시간당 ${f1(dens)}점으로 밀도가 높았어요. 짧아도 깊게 몰입한 달입니다.` };
   return { style: '편안한 흐름형', note: `버텨낸 비율 ${clayPct}%로, 즐겁게 한 노력이 중심이 된 무리 없는 달이에요.` };
@@ -159,7 +160,7 @@ export function ReportScreen() {
           <div style={{ marginTop: 16, background: 'var(--card-2)', borderRadius: "var(--r-card)", padding: 16 }}>
             <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.06em', color: 'var(--clay-accent)', marginBottom: 7 }}>다음 달을 위한 한 줄</div>
             <div style={{ font: '400 14px/1.6 var(--font-sans)', color: 'var(--ink-soft)' }}>
-              {r.clayPct >= 45
+              {r.clayPct >= 60
                 ? `이번 달은 ${clayCount}번의 버텨낸 순간이 있었어요. 다음 달엔 가볍게 쌓는 날도 의식적으로 넣어보세요.`
                 : '다음 달엔 작은 기록을 자주 쌓아보세요. 하루 한 줄이면 충분합니다.'}
             </div>

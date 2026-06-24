@@ -4,7 +4,7 @@ import { toISODate, addDays } from './format';
 import { entryEffort, entryHours, joyPart, clayPart, aggregateByDay } from './score';
 import {
   daySeries, periodStats, streaks, goalStats, resistanceHistogram,
-  weekendSplit, projection, calendarGrid, lifetimeTotals, toCSV, density,
+  weekendSplit, projection, monthCalendars, lifetimeTotals, toCSV, density,
 } from './stats';
 
 const COEF = 0.3;
@@ -144,15 +144,19 @@ describe('projection', () => {
   });
 });
 
-describe('calendarGrid', () => {
-  it('builds weeks x 7 grid ending at current week', () => {
-    const today = new Date(2026, 5, 24);
-    const grid = calendarGrid([entry(toISODate(today), 4, 0)], COEF, today, 4);
-    expect(grid).toHaveLength(4);
-    expect(grid.every((col) => col.length === 7)).toBe(true);
-    const flat = grid.flat();
-    const todayCell = flat.find((c) => c.date === toISODate(today))!;
-    expect(todayCell.level).toBe(4); // only nonzero day → max
+describe('monthCalendars', () => {
+  it('builds month blocks newest-first with goal-met flag', () => {
+    const today = new Date(2026, 5, 24); // June
+    const blocks = monthCalendars([entry(toISODate(today), 40, 0)], COEF, today, 3, 10); // effort 10 → 목표 달성
+    expect(blocks).toHaveLength(3);
+    expect(blocks[0].month).toBe(5); // 최신 = 6월
+    expect(blocks[0].year).toBe(2026);
+    expect(blocks[1].month).toBe(4); // 5월
+    expect(blocks[0].firstDow).toBe(new Date(2026, 5, 1).getDay());
+    const todayCell = blocks[0].cells.find((c) => c.date === toISODate(today))!;
+    expect(todayCell.day).toBe(24);
+    expect(todayCell.level).toBe(4); // 유일한 비0 → 최댓값
+    expect(todayCell.met).toBe(true);
     expect(todayCell.future).toBe(false);
   });
 });

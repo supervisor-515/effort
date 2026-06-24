@@ -265,43 +265,54 @@ export const density = (total: number, hours: number): number => (hours > 0 ? to
 // ───────────── 연간 캘린더 히트맵 ─────────────
 
 export type CalLevel = 0 | 1 | 2 | 3 | 4;
-export type CalCell = { date: string; total: number; level: CalLevel; future: boolean; met: boolean };
 
-/** GitHub 잔디형 그리드: 열=주(과거→현재), 각 열은 일~토 7칸. weeks 기본 53(약 1년).
- *  goal 을 주면 '하루 목표 달성' 여부(met)를 칸마다 표시한다. */
-export function calendarGrid(entries: Entry[], coef: number, today: Date, weeks = 53, goal = 0): CalCell[][] {
+/** 노력량 → 0~4 단계 (표시 범위 최댓값 기준 사분위) */
+function calLevel(total: number, maxT: number): CalLevel {
+  if (total <= 0 || maxT <= 0) return 0;
+  const r = total / maxT;
+  if (r <= 0.25) return 1;
+  if (r <= 0.5) return 2;
+  if (r <= 0.75) return 3;
+  return 4;
+}
+
+export type MonthCell = { date: string; day: number; total: number; level: CalLevel; met: boolean; future: boolean };
+export type MonthBlock = { year: number; month: number; firstDow: number; cells: MonthCell[] };
+
+/** 최근 monthsBack 개월의 월별 달력(최신 달이 [0]). 색 단계는 전체 구간 최댓값 기준으로 통일.
+ *  goal 을 주면 '하루 목표 달성' 여부(met)를 날마다 표시한다. */
+export function monthCalendars(entries: Entry[], coef: number, today: Date, monthsBack = 12, goal = 0): MonthBlock[] {
   const map = aggregateByDay(entries, coef);
-  const lastSun = addDays(today, -today.getDay()); // 이번 주 일요일
-  // 표시 범위 안의 최댓값으로 레벨 구간 산정
+  const totalOf = (year: number, month: number, day: number): number =>
+    map.get(toISODate(new Date(year, month, day)))?.total ?? 0;
+
+  // 표시 구간 최댓값(색 단계 통일용)
   let maxT = 0;
-  for (let c = weeks - 1; c >= 0; c--) {
-    const colSun = addDays(lastSun, -7 * c);
-    for (let d = 0; d < 7; d++) {
-      const t = map.get(toISODate(addDays(colSun, d)))?.total ?? 0;
+  for (let i = 0; i < monthsBack; i++) {
+    const dt = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const days = new Date(dt.getFullYear(), dt.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+      const t = totalOf(dt.getFullYear(), dt.getMonth(), d);
       if (t > maxT) maxT = t;
     }
   }
-  const levelOf = (t: number): CalLevel => {
-    if (t <= 0 || maxT <= 0) return 0;
-    const r = t / maxT;
-    if (r <= 0.25) return 1;
-    if (r <= 0.5) return 2;
-    if (r <= 0.75) return 3;
-    return 4;
-  };
-  const cols: CalCell[][] = [];
-  for (let c = weeks - 1; c >= 0; c--) {
-    const colSun = addDays(lastSun, -7 * c);
-    const col: CalCell[] = [];
-    for (let d = 0; d < 7; d++) {
-      const day = addDays(colSun, d);
-      const iso = toISODate(day);
-      const total = map.get(iso)?.total ?? 0;
-      col.push({ date: iso, total, level: levelOf(total), future: day > today, met: goal > 0 && total >= goal });
+
+  const blocks: MonthBlock[] = [];
+  for (let i = 0; i < monthsBack; i++) {
+    const dt = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const year = dt.getFullYear();
+    const month = dt.getMonth();
+    const days = new Date(year, month + 1, 0).getDate();
+    const cells: MonthCell[] = [];
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(year, month, d);
+      const iso = toISODate(date);
+      const total = totalOf(year, month, d);
+      cells.push({ date: iso, day: d, total, level: calLevel(total, maxT), met: goal > 0 && total >= goal, future: date > today });
     }
-    cols.push(col);
+    blocks.push({ year, month, firstDow: new Date(year, month, 1).getDay(), cells });
   }
-  return cols;
+  return blocks;
 }
 
 // ───────────── 페이스 예측 ─────────────
