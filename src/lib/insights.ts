@@ -1,4 +1,4 @@
-import { f1, TIME_BANDS } from './format';
+import { f1, josa, TIME_BANDS } from './format';
 import { density as densityOf } from './stats';
 import type { CatStat, Projection, WeekendSplit } from './stats';
 
@@ -99,8 +99,8 @@ export function categoryInsight(c: CatStat, ctx: { maxHours: number; isTop: bool
 /** 예상치 vs 현재 누적 코멘트 */
 export function projectionNote(p: Projection, current: number, range: 'month' | 'year'): string {
   const unit = range === 'month' ? '이번 달' : '올해';
-  if (p.remaining <= 0) return `${unit}을 마무리했어요. 최종 ${f1(current)}점이에요.`;
-  return `지금 페이스라면 ${unit}은 약 ${f1(p.projected)}점으로 마무리될 것 같아요. (남은 ${p.remaining}일 · 현재 ${f1(current)}점)`;
+  if (p.remaining <= 0) return `${unit}${josa(unit, '을', '를')} 마무리했어요. 최종 ${f1(current)}점이에요.`;
+  return `지금 페이스라면 ${unit}${josa(unit, '은', '는')} 약 ${f1(p.projected)}점으로 마무리될 것 같아요. (남은 ${p.remaining}일 · 현재 ${f1(current)}점)`;
 }
 
 // ───────────── 일일 목표 ─────────────

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store';
 import { useStatsView } from '../statsView';
-import { entryEffort, entryHours } from '../lib/score';
+import { entryEffort, entryHours, joyPart } from '../lib/score';
 import {
   addDays, currentBand, entryBand, fmtHM, fullDateLabel, parseISODate, relDateLabel, resWord, TIME_BANDS, toISODate, f1,
 } from '../lib/format';
@@ -76,7 +76,7 @@ export function InputScreen({ initialDate }: { initialDate?: string }) {
 
   const totalEffort = dayItems.reduce((a, e) => a + entryEffort(e, coef), 0);
   const totalHours = dayItems.reduce((a, e) => a + entryHours(e), 0);
-  const joy = dayItems.filter((e) => e.resistance <= 2).reduce((a, e) => a + entryEffort(e, coef), 0);
+  const joy = dayItems.reduce((a, e) => a + joyPart(e, coef), 0);
   const goal = settings.dailyGoal;
   const goalMet = goal > 0 && totalEffort >= goal;
   const fill = goal > 0 ? Math.min(totalEffort / goal, 1) : (totalEffort > 0 ? 1 : 0);

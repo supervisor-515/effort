@@ -24,6 +24,18 @@ export const RES_WORDS = [
 
 export const resWord = (r: number): string => RES_WORDS[r] ?? '';
 
+/** 단어 끝 글자에 받침이 있는지 (한글이 아니면 false 취급) */
+export function hasBatchim(word: string): boolean {
+  if (!word) return false;
+  const last = word.charCodeAt(word.length - 1);
+  if (last < 0xac00 || last > 0xd7a3) return false;
+  return (last - 0xac00) % 28 !== 0;
+}
+
+/** 받침 유무에 맞는 조사 선택. josa('올해','은','는') → '는', josa('이번 달','은','는') → '은' */
+export const josa = (word: string, withBatchim: string, withoutBatchim: string): string =>
+  hasBatchim(word) ? withBatchim : withoutBatchim;
+
 /** 두 hex 색을 t(0~1)로 섞어 rgb() 문자열 */
 export function mix(a: string, b: string, t: number): string {
   const p = (h: string) => [

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Category, Entry, Resistance } from '../types';
 import { toISODate, addDays } from './format';
-import { entryEffort, entryHours, isJoy, isClay, aggregateByDay } from './score';
+import { entryEffort, entryHours, joyPart, clayPart, aggregateByDay } from './score';
 import {
   daySeries, periodStats, streaks, goalStats, resistanceHistogram,
   weekendSplit, projection, calendarGrid, lifetimeTotals, toCSV, density,
@@ -29,9 +29,18 @@ describe('score', () => {
     expect(entryEffort(entry('2026-06-01', 4, 5), COEF)).toBeCloseTo(2.5);
   });
 
-  it('isJoy(0..2) / isClay(3..5)', () => {
-    expect([0, 1, 2].every((r) => isJoy(entry('d', 1, r as Resistance)))).toBe(true);
-    expect([3, 4, 5].every((r) => isClay(entry('d', 1, r as Resistance)))).toBe(true);
+  it('joyPart/clayPart split effort by resistance ratio and sum to effort', () => {
+    const e0 = entry('d', 4, 0); // 저항 0 → 전부 즐거움
+    expect(joyPart(e0, COEF)).toBeCloseTo(1.0);
+    expect(clayPart(e0, COEF)).toBeCloseTo(0);
+    const e5 = entry('d', 4, 5); // 저항 5(MAX) → 전부 버팀
+    expect(joyPart(e5, COEF)).toBeCloseTo(0);
+    expect(clayPart(e5, COEF)).toBeCloseTo(2.5);
+    const e3 = entry('d', 4, 3); // 저항 3 → 60% 버팀 / 40% 즐거움
+    const eff3 = entryEffort(e3, COEF);
+    expect(clayPart(e3, COEF)).toBeCloseTo(eff3 * 0.6);
+    expect(joyPart(e3, COEF)).toBeCloseTo(eff3 * 0.4);
+    expect(joyPart(e3, COEF) + clayPart(e3, COEF)).toBeCloseTo(eff3);
   });
 
   it('density', () => {
@@ -197,5 +206,12 @@ describe('periodStats', () => {
     // joy 1.0, clay 2.5, total 3.5 → clayPct ~71
     expect(s.clayPct).toBe(71);
     expect(s.joyPct).toBe(29);
+  });
+
+  it('mid resistance splits proportionally (res 3 → 60% clay)', () => {
+    const today = new Date(2026, 5, 24);
+    const s = periodStats([entry(toISODate(today), 4, 3)], COEF, today, 'day');
+    expect(s.clayPct).toBe(60);
+    expect(s.joyPct).toBe(40);
   });
 });

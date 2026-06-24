@@ -54,6 +54,18 @@ describe('insights notes', () => {
     const s = projectionNote({ projected: 30, elapsed: 10, total: 30, remaining: 20 }, 10, 'month');
     expect(s).toContain('약');
   });
+  it('projectionNote year uses correct particle (올해는, not 올해은)', () => {
+    const ongoing = projectionNote({ projected: 30, elapsed: 10, total: 365, remaining: 355 }, 10, 'year');
+    expect(ongoing).toContain('올해는');
+    expect(ongoing).not.toContain('올해은');
+    const done = projectionNote({ projected: 30, elapsed: 365, total: 365, remaining: 0 }, 30, 'year');
+    expect(done).toContain('올해를');
+    expect(done).not.toContain('올해을');
+  });
+  it('projectionNote month keeps 이번 달은/을', () => {
+    const s = projectionNote({ projected: 30, elapsed: 10, total: 30, remaining: 20 }, 10, 'month');
+    expect(s).toContain('이번 달은');
+  });
 });
 
 describe('stats.buildFlow', () => {

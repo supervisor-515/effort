@@ -7,10 +7,16 @@ export const entryHours = (e: Entry): number => e.units * 0.25;
 export const entryEffort = (e: Entry, coef: number): number =>
   entryHours(e) * (1 + e.resistance * coef);
 
-/** "즐겁게 한 노력" = resistance 0~2 */
-export const isJoy = (e: Entry): boolean => e.resistance <= 2;
-/** "버텨낸 노력" = resistance 3~5 */
-export const isClay = (e: Entry): boolean => e.resistance >= 3;
+/** 저항도 척도의 최대값. 노력량을 즐거움/버팀으로 비율 배분할 때의 기준. */
+export const MAX_RESISTANCE = 5;
+
+/** 버팀 성분: 항목 노력량 × (저항/MAX). 저항 0이면 0, MAX면 노력량 전체. */
+export const clayPart = (e: Entry, coef: number): number =>
+  entryEffort(e, coef) * (e.resistance / MAX_RESISTANCE);
+
+/** 즐거움 성분: 항목 노력량 × (1 - 저항/MAX). joyPart + clayPart === entryEffort. */
+export const joyPart = (e: Entry, coef: number): number =>
+  entryEffort(e, coef) * (1 - e.resistance / MAX_RESISTANCE);
 
 export type DayAgg = {
   date: string;
@@ -36,8 +42,8 @@ export function aggregateByDay(entries: Entry[], coef: number): Map<string, DayA
     const eff = entryEffort(e, coef);
     d.total += eff;
     d.hours += entryHours(e);
-    if (isJoy(e)) d.joy += eff;
-    else d.clay += eff;
+    d.joy += joyPart(e, coef);
+    d.clay += clayPart(e, coef);
     d.resSum += e.resistance;
     d.count += 1;
     d.entries.push(e);

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { f1, fmtHM, parseISODate, shortDateLabel } from '../lib/format';
-import { aggregateByDay, isClay } from '../lib/score';
+import { aggregateByDay, MAX_RESISTANCE } from '../lib/score';
 import { categoryStats, density, stabilityIndex } from '../lib/stats';
 import { periodFilter } from '../lib/period';
 import { renderReportPng } from '../lib/reportCanvas';
@@ -118,7 +118,8 @@ export function ReportScreen() {
       setTimeout(() => setShareMsg(null), 2200);
     }
   };
-  const clayCount = entries.filter(periodFilter('month', today)).filter(isClay).length;
+  // '버틴 항목 개수'는 노력량 분해와 별개의 카운트 — 저항이 척도 중앙값 이상인 항목 수
+  const clayCount = entries.filter(periodFilter('month', today)).filter((e) => e.resistance >= MAX_RESISTANCE / 2).length;
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>

@@ -1,6 +1,6 @@
 import type { Category, Entry, RangeKey } from '../types';
 import { addDays, toISODate, parseISODate, f1, fmtHM, entryBand } from './format';
-import { aggregateByDay, entryEffort, entryHours, isClay, isJoy, type DayAgg } from './score';
+import { aggregateByDay, entryEffort, entryHours, joyPart, clayPart, type DayAgg } from './score';
 
 const emptyDay = (date: string): DayAgg => ({
   date, total: 0, hours: 0, joy: 0, clay: 0, resSum: 0, count: 0, resAvg: 0, entries: [],
@@ -183,8 +183,8 @@ export function categoryStats(
     const es = src.filter((e) => e.categoryId === c.id);
     const effort = es.reduce((a, e) => a + entryEffort(e, coef), 0);
     const hours = es.reduce((a, e) => a + entryHours(e), 0);
-    const clay = es.filter(isClay).reduce((a, e) => a + entryEffort(e, coef), 0);
-    const joy = es.filter(isJoy).reduce((a, e) => a + entryEffort(e, coef), 0);
+    const clay = es.reduce((a, e) => a + clayPart(e, coef), 0);
+    const joy = es.reduce((a, e) => a + joyPart(e, coef), 0);
     const avgRes = es.length ? es.reduce((a, e) => a + e.resistance, 0) / es.length : 0;
     return {
       id: c.id, name: c.name, color: c.color,
