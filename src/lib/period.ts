@@ -33,22 +33,19 @@ export const RANGE_TITLE: Record<RangeKey, (today: Date) => string> = {
 
 export const RANGE_LABEL: Record<RangeKey, string> = { day: '오늘', week: '이번 주', month: '이번 달', year: '올해' };
 
-/** 마지막 글자 받침 유무로 은/는 선택 */
-function topic(word: string): string {
-  const last = word.charCodeAt(word.length - 1);
-  if (last < 0xac00 || last > 0xd7a3) return '는';
-  return (last - 0xac00) % 28 !== 0 ? '은' : '는';
-}
+/** 회고 주어 — 현재 기간이면 현재형, 과거 기간을 보고 있으면 회상형 */
+const SUBJ_CURRENT: Record<RangeKey, string> = { day: '오늘은', week: '이번 주는', month: '이번 달은', year: '올해는' };
+const SUBJ_PAST: Record<RangeKey, string> = { day: '그날은', week: '그 주는', month: '그달은', year: '그 해는' };
 
 export function recapLine(p: {
   range: RangeKey;
   clayPct: number;
   deltaPct: number | null;
   hasData: boolean;
+  isCurrent?: boolean;
 }): string {
   if (!p.hasData) return '아직 기록이 쌓이는 중이에요. 한 줄씩 적어가다 보면 흐름이 보여요.';
-  const rw = RANGE_LABEL[p.range];
-  const t = `${rw}${topic(rw)}`;
+  const t = (p.isCurrent === false ? SUBJ_PAST : SUBJ_CURRENT)[p.range];
   const c = p.clayPct;
 
   // 분해 방식 변경(저항 비율 배분)에 맞춘 임계값: clayPct ≈ 20 × 평균 저항.
@@ -56,8 +53,8 @@ export function recapLine(p: {
   let body: string;
   if (p.range === 'year') {
     body = c <= 55
-      ? '올해는 천천히, 그러나 분명히 쌓였어요.'
-      : '올해는 버텨낸 시간이 많았던 한 해였어요. 그만큼 단단해졌어요.';
+      ? `${t} 천천히, 그러나 분명히 쌓였어요.`
+      : `${t} 버텨낸 시간이 많았어요. 그만큼 단단해졌어요.`;
   } else if (c <= 35) {
     body = `${t} 즐겁게 한 노력이 중심이었어요. 무리 없이 가볍게 흘러갔어요.`;
   } else if (c <= 52) {
@@ -83,8 +80,8 @@ export function recapLine(p: {
  *  저항 비율 배분(clayPct ≈ 20×평균 저항)에 맞춘 임계값. */
 export function ratioNote(clayPct: number): string {
   if (clayPct <= 25) return '거의 다 즐겁게 한 노력이었어요. 가볍게 흘러간 시기예요.';
-  if (clayPct <= 45) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
-  if (clayPct <= 58) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
+  if (clayPct <= 44) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
+  if (clayPct <= 56) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
   if (clayPct <= 72) return '버텨낸 노력의 비중이 컸어요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.';
   return '대부분이 버텨낸 노력이었어요. 무리하지 않았는지 살펴봐도 좋아요.';
 }

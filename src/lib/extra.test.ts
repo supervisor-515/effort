@@ -24,6 +24,13 @@ describe('period.recapLine', () => {
     const s = recapLine({ range: 'week', clayPct: 50, deltaPct: 30, hasData: true });
     expect(s).toContain('30%');
   });
+  it('uses recall voice for a past period', () => {
+    const past = recapLine({ range: 'month', clayPct: 40, deltaPct: null, hasData: true, isCurrent: false });
+    expect(past).toContain('그달은');
+    expect(past).not.toContain('이번 달은');
+    const cur = recapLine({ range: 'month', clayPct: 40, deltaPct: null, hasData: true, isCurrent: true });
+    expect(cur).toContain('이번 달은');
+  });
 });
 
 describe('period.ratioNote', () => {
@@ -49,6 +56,11 @@ describe('insights notes', () => {
   it('weekendNote detects weekday-heavy', () => {
     const s = weekendNote({ weekdayAvg: 2, weekendAvg: 1, weekdayRes: 2, weekendRes: 2 });
     expect(s).toContain('평일');
+  });
+  it('weekendNote does not over-claim when one side has no data', () => {
+    const s = weekendNote({ weekdayAvg: 2, weekendAvg: 0, weekdayRes: 2, weekendRes: 0 });
+    expect(s).toContain('주말 기록이 없어요');
+    expect(s).not.toContain('활발');
   });
   it('projectionNote shows projected value', () => {
     const s = projectionNote({ projected: 30, elapsed: 10, total: 30, remaining: 20 }, 10, 'month');

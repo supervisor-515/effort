@@ -269,7 +269,7 @@ export function StatsMainScreen() {
             {/* 한 줄 회고 */}
             <div style={{ background: 'var(--olive)', borderRadius: "var(--r-card)", padding: '18px 20px', marginTop: 12 }}>
               <div style={{ font: '700 12px var(--font-sans)', color: 'rgba(255,255,255,0.8)', marginBottom: 8 }}>{RANGE_LABEL[range]}의 회고</div>
-              <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine({ range, clayPct: stats.clayPct, deltaPct: stats.deltaPct, hasData: stats.hasData })}</div>
+              <div style={{ font: '400 15px/1.6 var(--font-sans)', color: 'var(--card)' }}>{recapLine({ range, clayPct: stats.clayPct, deltaPct: stats.deltaPct, hasData: stats.hasData, isCurrent: atLatest })}</div>
             </div>
 
             {/* 자동 인사이트 피드 (필터 없을 때, 전체 흐름 기준) */}

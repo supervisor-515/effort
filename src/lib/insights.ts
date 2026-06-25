@@ -108,6 +108,8 @@ export function projectionNote(p: Projection, current: number, range: 'month' | 
 export function goalNote(metDays: number, activeDays: number, goal: number): string {
   if (activeDays === 0) return `하루 목표는 ${goal}점이에요. 기록이 쌓이면 달성한 날을 세어드려요.`;
   const rate = Math.round((metDays / activeDays) * 100);
+  // 표본이 너무 적으면(2일 이하) 단정하지 않고 담백하게
+  if (activeDays <= 2) return `기록한 ${activeDays}일 중 ${metDays}일이 목표(${goal}점)를 넘겼어요.`;
   if (rate >= 80) return `기록한 ${activeDays}일 중 ${metDays}일을 목표(${goal}점) 이상 달성했어요. 흐름이 아주 단단해요.`;
   if (rate >= 50) return `기록한 ${activeDays}일 중 ${metDays}일이 목표(${goal}점)를 넘겼어요. 절반 넘게 채웠어요.`;
   if (metDays > 0) return `${metDays}일이 목표(${goal}점)를 넘겼어요. 목표를 살짝 낮춰 더 자주 닿게 해도 좋아요.`;
@@ -124,15 +126,18 @@ export function histogramNote(count: number[]): string {
   const RES = ['편하게 함', '살짝 귀찮음', '미루고 싶었음', '하기 싫었음', '진짜 버팀', '나를 이김'];
   const pct = Math.round((count[maxI] / total) * 100);
   const heavyPct = Math.round(((count[3] + count[4] + count[5]) / total) * 100);
-  return `‘${RES[maxI]}’(저항 ${maxI}) 항목이 ${pct}%로 가장 많아요. 버텨낸 항목(저항 3+)은 전체의 ${heavyPct}%예요.`;
+  return `‘${RES[maxI]}’(저항 ${maxI}) 항목이 ${pct}%로 가장 많아요. 저항 3 이상인 항목은 전체의 ${heavyPct}%예요.`;
 }
 
 // ───────────── 평일 vs 주말 ─────────────
 
 export function weekendNote(s: WeekendSplit): string {
-  if (s.weekdayAvg === 0 && s.weekendAvg === 0) return '평일·주말 비교는 기록이 더 쌓이면 보여드려요.';
   const wd = f1(s.weekdayAvg);
   const we = f1(s.weekendAvg);
+  // 한쪽에 기록이 없으면 비교가 아니라 안내로
+  if (s.weekdayAvg > 0 && s.weekendAvg === 0) return `아직 주말 기록이 없어요. 평일엔 하루 평균 ${wd}점을 쌓고 있어요.`;
+  if (s.weekendAvg > 0 && s.weekdayAvg === 0) return `아직 평일 기록이 없어요. 주말엔 하루 평균 ${we}점을 쌓고 있어요.`;
+  if (s.weekdayAvg === 0 && s.weekendAvg === 0) return '평일·주말 비교는 기록이 더 쌓이면 보여드려요.';
   if (s.weekdayAvg >= s.weekendAvg * 1.25) return `평일 하루 평균 ${wd}점으로 주말(${we}점)보다 활발해요. 평일에 더 많이 쌓는 편이에요.`;
   if (s.weekendAvg >= s.weekdayAvg * 1.25) return `주말 하루 평균 ${we}점으로 평일(${wd}점)보다 높아요. 주말에 더 몰아서 하는 편이에요.`;
   return `평일 ${wd}점, 주말 ${we}점으로 큰 차이 없이 고르게 이어가고 있어요.`;

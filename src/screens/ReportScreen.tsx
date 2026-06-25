@@ -161,7 +161,7 @@ export function ReportScreen() {
             <div style={{ font: '600 11px var(--font-sans)', letterSpacing: '.06em', color: 'var(--clay-accent)', marginBottom: 7 }}>다음 달을 위한 한 줄</div>
             <div style={{ font: '400 14px/1.6 var(--font-sans)', color: 'var(--ink-soft)' }}>
               {r.clayPct >= 60
-                ? `이번 달은 ${clayCount}번의 버텨낸 순간이 있었어요. 다음 달엔 가볍게 쌓는 날도 의식적으로 넣어보세요.`
+                ? `이번 달은 저항 3 이상을 넘긴 순간이 ${clayCount}번 있었어요. 다음 달엔 가볍게 쌓는 날도 의식적으로 넣어보세요.`
                 : '다음 달엔 작은 기록을 자주 쌓아보세요. 하루 한 줄이면 충분합니다.'}
             </div>
           </div>
