@@ -76,12 +76,12 @@ export function recapLine(p: {
   return body + tail;
 }
 
-/** 즐겁게 vs 버텨냄 비율 코멘트 — 5단계.
- *  저항 비율 배분(clayPct ≈ 20×평균 저항)에 맞춘 임계값. */
+/** 즐겁게 vs 버텨냄 비율 코멘트 — 회고(recapLine)가 '무슨 일이 있었나'를 서술한다면,
+ *  이건 '그래서 어떻게 하면 좋은가'를 짚는 조언형. 임계값은 clayPct ≈ 20×평균 저항 기준. */
 export function ratioNote(clayPct: number): string {
-  if (clayPct <= 25) return '거의 다 즐겁게 한 노력이었어요. 가볍게 흘러간 시기예요.';
-  if (clayPct <= 44) return '즐겁게 한 노력이 흐름을 이끌었어요. 버텨낸 노력도 적당히 섞였고요.';
-  if (clayPct <= 56) return '즐겁게 한 노력과 버텨낸 노력이 균형을 이뤘어요.';
-  if (clayPct <= 72) return '버텨낸 노력의 비중이 컸어요. 힘든 걸 그만큼 많이 넘겼다는 뜻이에요.';
-  return '대부분이 버텨낸 노력이었어요. 무리하지 않았는지 살펴봐도 좋아요.';
+  if (clayPct <= 25) return '거의 다 즐겁게 한 노력이었어요. 가끔 살짝 어려운 일에 손대면 성장 폭이 커져요.';
+  if (clayPct <= 44) return '즐겁게 한 노력이 흐름을 이끌었어요. 무리 없이 오래 지속하기 좋은 균형이에요.';
+  if (clayPct <= 56) return '즐거움과 버팀이 균형을 이뤘어요. 지금 리듬이 가장 오래가는 페이스예요.';
+  if (clayPct <= 72) return '버텨낸 노력의 비중이 컸어요. 잘 해내고 있지만, 의식적으로 쉬어가는 날도 챙겨주세요.';
+  return '대부분이 버텨낸 노력이었어요. 무리가 쌓이지 않게 가벼운 날을 한두 번 끼워보세요.';
 }
