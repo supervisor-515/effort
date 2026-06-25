@@ -117,10 +117,16 @@ export function renderReportPng(d: ReportImageData): Promise<Blob> {
   y += 34;
 
   // 큰 셀 2개
+  const bigMaxW = W / 2 - 46; // 가운데 분리선과 닿지 않도록 한 칸 안전 폭
   const drawBig = (x: number, value: string, label: string) => {
     ctx.textAlign = 'center';
     ctx.fillStyle = C.ink;
-    ctx.font = `500 32px ${SERIF}`;
+    let size = 28;
+    ctx.font = `500 ${size}px ${SERIF}`;
+    while (size > 16 && ctx.measureText(value).width > bigMaxW) {
+      size -= 1;
+      ctx.font = `500 ${size}px ${SERIF}`;
+    }
     ctx.fillText(value, x, y);
     ctx.fillStyle = C.inkMute;
     ctx.font = `400 11px ${SANS}`;

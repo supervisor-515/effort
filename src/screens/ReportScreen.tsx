@@ -184,9 +184,9 @@ export function ReportScreen() {
 
 function BigCell({ value, label }: { value: string; label: string }) {
   return (
-    <div style={{ flex: 1, textAlign: 'center' }}>
-      <div style={{ font: '500 34px var(--font-serif)', color: 'var(--ink)' }}>{value}</div>
-      <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 3 }}>{label}</div>
+    <div style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '0 12px' }}>
+      <div style={{ font: '500 27px var(--font-serif)', color: 'var(--ink)', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>{value}</div>
+      <div style={{ font: '400 11px var(--font-sans)', color: 'var(--ink-mute)', marginTop: 4 }}>{label}</div>
     </div>
   );
 }
